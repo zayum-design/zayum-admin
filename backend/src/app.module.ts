@@ -17,6 +17,7 @@ import { ConfigModule } from './modules/config/config.module';
 import { UploadModule } from './modules/upload/upload.module';
 import { NotificationModule } from './modules/notification/notification.module';
 import { ProfileModule } from './modules/profile/profile.module';
+import { AiModule } from './modules/ai/ai.module';
 import { JwtAuthGuard } from './modules/auth/guards/jwt-auth.guard';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 import { ResponseInterceptor } from './common/interceptors/response.interceptor';
@@ -59,6 +60,7 @@ import { ResponseInterceptor } from './common/interceptors/response.interceptor'
     UploadModule,
     NotificationModule,
     ProfileModule,
+    AiModule,
   ],
   controllers: [AppController],
   providers: [

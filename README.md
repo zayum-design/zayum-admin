@@ -186,6 +186,46 @@ npm run seed
 - **用户名**：admin
 - **密码**：Admin@888888
 
+## 🤖 AI CLI 代码生成器
+
+项目内置了 AI 驱动的 CLI 工具，支持对话式代码生成：
+
+### 安装与启动
+```bash
+# 安装 CLI 依赖
+cd cli && npm install && npm run build
+
+# 启动 AI 交互模式
+cd ..
+./zayum ai
+```
+
+### 功能特性
+- **智能对话**：自然语言描述需求，AI 引导完成开发
+- **表结构设计**：自动分析并建议数据库表结构
+- **代码生成**：一键生成 Entity、DTO、Service、Controller、Module
+- **自动注册**：自动将新模块注册到 app.module.ts
+- **菜单生成**：自动生成后端菜单配置
+- **多模型支持**：支持 DeepSeek、OpenAI、通义千问、Moonshot
+
+### 工作流程
+1. 描述需求：告诉 AI 你想开发什么功能
+2. 设计表结构：AI 引导设计数据库表结构
+3. 确认功能：确认需要的 CRUD 功能
+4. 生成代码：AI 生成完整的后端代码
+5. 预览代码：使用 `/preview` 查看生成的文件
+6. 保存代码：使用 `/save` 将代码写入项目
+
+### 常用命令
+| 命令 | 说明 |
+|------|------|
+| `/new` | 创建新会话 |
+| `/model` | 切换 AI 模型 |
+| `/provider` | 切换 AI 提供商 |
+| `/save` | 保存代码到项目 |
+| `/exit` | 退出 |
+
+更多详情查看 [cli/README.md](cli/README.md)
 
 ## 🔧 API接口
 
@@ -351,10 +391,4 @@ UPDATE sys_admin SET password = bcrypt_hash('新密码', 10) WHERE username = 'a
 如有问题或建议，请通过以下方式联系：
 
 1. 创建 [Issue](https://github.com/your-repo/issues)
-2. 发送邮件至: support@example.com
 
----
-
-**感谢使用 Zayum Admin 后台管理系统！** 🎉
-
-> 💡 **提示**：本项目为学习项目，适合作为企业级后台管理系统的参考实现。实际生产环境中请根据需求进行安全加固和性能优化。
