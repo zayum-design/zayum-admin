@@ -220,6 +220,9 @@ dmypy.json
 # Backend specific
 backend/.env
 backend/.env.*
+!backend/.env.example
+!backend/.env.development.example
+!backend/.env.production.example
 backend/__pycache__/
 backend/venv/
 backend/env/
@@ -238,6 +241,7 @@ frontend/out/
 # Frontend environment files
 frontend/.env
 frontend/.env.*
+!frontend/.env.example
 
 # Lock files（根据项目需要决定是否忽略）
 # package-lock.json
