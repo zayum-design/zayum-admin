@@ -279,7 +279,11 @@ temp/
 *.bak
 *.backup
 
+
+#development-guide
+development-guide/
+
 # Claude
 .claude
-
+# me
 me.md
