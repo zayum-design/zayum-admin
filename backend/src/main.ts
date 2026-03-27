@@ -13,8 +13,10 @@ async function bootstrap() {
 
   // 启用 CORS
   app.enableCors({
-    origin: process.env.FRONTEND_URL || 'http://localhost:5173',
+    origin: true, // 允许所有来源（开发环境）
     credentials: true,
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
+    allowedHeaders: 'Content-Type, Accept, Authorization',
   });
 
   // 静态文件服务
@@ -31,7 +33,7 @@ async function bootstrap() {
     }),
   );
 
-  await app.listen(process.env.PORT ?? 3000);
-  console.log(`Application is running on: http://localhost:${process.env.PORT ?? 3000}`);
+  await app.listen(process.env.PORT ?? 3000, '0.0.0.0');
+  console.log(`Application is running on: http://0.0.0.0:${process.env.PORT ?? 3000}`);
 }
 bootstrap();

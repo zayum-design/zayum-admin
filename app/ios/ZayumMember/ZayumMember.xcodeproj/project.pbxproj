@@ -1,0 +1,565 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 56;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		AA000001 /* ZayumMemberApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000000 /* ZayumMemberApp.swift */; };
+		AA000003 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000002 /* ContentView.swift */; };
+		AA000005 /* APIClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000004 /* APIClient.swift */; };
+		AA000007 /* APIEndpoints.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000006 /* APIEndpoints.swift */; };
+		AA000009 /* TokenStorage.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000008 /* TokenStorage.swift */; };
+		AA00000B /* Member.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00000A /* Member.swift */; };
+		AA00000D /* BalanceRecord.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00000C /* BalanceRecord.swift */; };
+		AA00000F /* ScoreRecord.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00000E /* ScoreRecord.swift */; };
+		AA000011 /* APIResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000010 /* APIResponse.swift */; };
+		AA000013 /* AuthService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000012 /* AuthService.swift */; };
+		AA000015 /* MemberService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000014 /* MemberService.swift */; };
+		AA000017 /* RechargeService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000016 /* RechargeService.swift */; };
+		AA000019 /* AuthStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000018 /* AuthStore.swift */; };
+		AA00001B /* MemberStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00001A /* MemberStore.swift */; };
+		AA00001D /* LoginView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00001C /* LoginView.swift */; };
+		AA00001F /* RegisterView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00001E /* RegisterView.swift */; };
+		AA000021 /* MemberHomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000020 /* MemberHomeView.swift */; };
+		AA000023 /* ProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000022 /* ProfileView.swift */; };
+		AA000025 /* BalanceRecordsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000024 /* BalanceRecordsView.swift */; };
+		AA000027 /* ScoreRecordsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000026 /* ScoreRecordsView.swift */; };
+		AA000029 /* BalanceRechargeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000028 /* BalanceRechargeView.swift */; };
+		AA00002B /* ScoreRechargeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00002A /* ScoreRechargeView.swift */; };
+		AA00002D /* MemberInfoCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00002C /* MemberInfoCard.swift */; };
+		AA00002F /* QuickActionButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00002E /* QuickActionButton.swift */; };
+		AA000031 /* RecordRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000030 /* RecordRow.swift */; };
+		AA000033 /* MainTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000032 /* MainTabView.swift */; };
+		AA000035 /* SidebarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000034 /* SidebarView.swift */; };
+		AA000037 /* MainView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000036 /* MainView.swift */; };
+		AA000039 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = AA000038 /* Assets.xcassets */; };
+		AA00003B /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = AA00003A /* Preview Assets.xcassets */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		AA000000 /* ZayumMemberApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ZayumMemberApp.swift; sourceTree = "<group>"; };
+		AA000002 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		AA000004 /* APIClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIClient.swift; sourceTree = "<group>"; };
+		AA000006 /* APIEndpoints.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIEndpoints.swift; sourceTree = "<group>"; };
+		AA000008 /* TokenStorage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TokenStorage.swift; sourceTree = "<group>"; };
+		AA00000A /* Member.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Member.swift; sourceTree = "<group>"; };
+		AA00000C /* BalanceRecord.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BalanceRecord.swift; sourceTree = "<group>"; };
+		AA00000E /* ScoreRecord.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScoreRecord.swift; sourceTree = "<group>"; };
+		AA000010 /* APIResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIResponse.swift; sourceTree = "<group>"; };
+		AA000012 /* AuthService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthService.swift; sourceTree = "<group>"; };
+		AA000014 /* MemberService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MemberService.swift; sourceTree = "<group>"; };
+		AA000016 /* RechargeService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RechargeService.swift; sourceTree = "<group>"; };
+		AA000018 /* AuthStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthStore.swift; sourceTree = "<group>"; };
+		AA00001A /* MemberStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MemberStore.swift; sourceTree = "<group>"; };
+		AA00001C /* LoginView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginView.swift; sourceTree = "<group>"; };
+		AA00001E /* RegisterView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RegisterView.swift; sourceTree = "<group>"; };
+		AA000020 /* MemberHomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MemberHomeView.swift; sourceTree = "<group>"; };
+		AA000022 /* ProfileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileView.swift; sourceTree = "<group>"; };
+		AA000024 /* BalanceRecordsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BalanceRecordsView.swift; sourceTree = "<group>"; };
+		AA000026 /* ScoreRecordsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScoreRecordsView.swift; sourceTree = "<group>"; };
+		AA000028 /* BalanceRechargeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BalanceRechargeView.swift; sourceTree = "<group>"; };
+		AA00002A /* ScoreRechargeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScoreRechargeView.swift; sourceTree = "<group>"; };
+		AA00002C /* MemberInfoCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MemberInfoCard.swift; sourceTree = "<group>"; };
+		AA00002E /* QuickActionButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuickActionButton.swift; sourceTree = "<group>"; };
+		AA000030 /* RecordRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordRow.swift; sourceTree = "<group>"; };
+		AA000032 /* MainTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainTabView.swift; sourceTree = "<group>"; };
+		AA000034 /* SidebarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SidebarView.swift; sourceTree = "<group>"; };
+		AA000036 /* MainView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainView.swift; sourceTree = "<group>"; };
+		AA000038 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		AA00003A /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
+		AA00003C /* ZayumMember.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ZayumMember.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		AA00003D /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		AA000100 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		AA000200 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				AA00003C /* ZayumMember.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		AA000300 /* ZayumMember */ = {
+			isa = PBXGroup;
+			children = (
+				AA000301 /* App */,
+				AA000302 /* Core */,
+				AA000303 /* Models */,
+				AA000304 /* Services */,
+				AA000305 /* Store */,
+				AA000306 /* Views */,
+				AA000038 /* Assets.xcassets */,
+				AA00003D /* Info.plist */,
+			);
+			path = ZayumMember;
+			sourceTree = "<group>";
+		};
+		AA000301 /* App */ = {
+			isa = PBXGroup;
+			children = (
+				AA000000 /* ZayumMemberApp.swift */,
+			);
+			path = App;
+			sourceTree = "<group>";
+		};
+		AA000302 /* Core */ = {
+			isa = PBXGroup;
+			children = (
+				AA0003021 /* Network */,
+				AA0003022 /* Storage */,
+			);
+			path = Core;
+			sourceTree = "<group>";
+		};
+		AA0003021 /* Network */ = {
+			isa = PBXGroup;
+			children = (
+				AA000004 /* APIClient.swift */,
+				AA000006 /* APIEndpoints.swift */,
+			);
+			path = Network;
+			sourceTree = "<group>";
+		};
+		AA0003022 /* Storage */ = {
+			isa = PBXGroup;
+			children = (
+				AA000008 /* TokenStorage.swift */,
+			);
+			path = Storage;
+			sourceTree = "<group>";
+		};
+		AA000303 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				AA00000A /* Member.swift */,
+				AA00000C /* BalanceRecord.swift */,
+				AA00000E /* ScoreRecord.swift */,
+				AA000010 /* APIResponse.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		AA000304 /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				AA000012 /* AuthService.swift */,
+				AA000014 /* MemberService.swift */,
+				AA000016 /* RechargeService.swift */,
+			);
+			path = Services;
+			sourceTree = "<group>";
+		};
+		AA000305 /* Store */ = {
+			isa = PBXGroup;
+			children = (
+				AA000018 /* AuthStore.swift */,
+				AA00001A /* MemberStore.swift */,
+			);
+			path = Store;
+			sourceTree = "<group>";
+		};
+		AA000306 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				AA0003061 /* Auth */,
+				AA0003062 /* Member */,
+				AA0003063 /* Recharge */,
+				AA0003064 /* Components */,
+				AA0003065 /* Main */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		AA0003061 /* Auth */ = {
+			isa = PBXGroup;
+			children = (
+				AA00001C /* LoginView.swift */,
+				AA00001E /* RegisterView.swift */,
+			);
+			path = Auth;
+			sourceTree = "<group>";
+		};
+		AA0003062 /* Member */ = {
+			isa = PBXGroup;
+			children = (
+				AA000020 /* MemberHomeView.swift */,
+				AA000022 /* ProfileView.swift */,
+				AA000024 /* BalanceRecordsView.swift */,
+				AA000026 /* ScoreRecordsView.swift */,
+			);
+			path = Member;
+			sourceTree = "<group>";
+		};
+		AA0003063 /* Recharge */ = {
+			isa = PBXGroup;
+			children = (
+				AA000028 /* BalanceRechargeView.swift */,
+				AA00002A /* ScoreRechargeView.swift */,
+			);
+			path = Recharge;
+			sourceTree = "<group>";
+		};
+		AA0003064 /* Components */ = {
+			isa = PBXGroup;
+			children = (
+				AA00002C /* MemberInfoCard.swift */,
+				AA00002E /* QuickActionButton.swift */,
+				AA000030 /* RecordRow.swift */,
+			);
+			path = Components;
+			sourceTree = "<group>";
+		};
+		AA0003065 /* Main */ = {
+			isa = PBXGroup;
+			children = (
+				AA000002 /* ContentView.swift */,
+				AA000032 /* MainTabView.swift */,
+				AA000034 /* SidebarView.swift */,
+				AA000036 /* MainView.swift */,
+			);
+			path = Main;
+			sourceTree = "<group>";
+		};
+		AA000400 /* Preview Content */ = {
+			isa = PBXGroup;
+			children = (
+				AA00003A /* Preview Assets.xcassets */,
+			);
+			path = "Preview Content";
+			sourceTree = "<group>";
+		};
+		AA000500 = {
+			isa = PBXGroup;
+			children = (
+				AA000300 /* ZayumMember */,
+				AA000400 /* Preview Content */,
+				AA000200 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		AA000600 /* ZayumMember */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = AA000700 /* Build configuration list for PBXNativeTarget "ZayumMember" */;
+			buildPhases = (
+				AA000101 /* Sources */,
+				AA000100 /* Frameworks */,
+				AA000102 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = ZayumMember;
+			productName = ZayumMember;
+			productReference = AA00003C /* ZayumMember.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		AA000800 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 1500;
+				LastUpgradeCheck = 1500;
+				TargetAttributes = {
+					AA000600 = {
+						CreatedOnToolsVersion = 15.0;
+					};
+				};
+			};
+			buildConfigurationList = AA000801 /* Build configuration list for PBXProject "ZayumMember" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = AA000500;
+			productRefGroup = AA000200 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				AA000600 /* ZayumMember */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		AA000102 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				AA00003B /* Preview Assets.xcassets in Resources */,
+				AA000039 /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		AA000101 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				AA000001 /* ZayumMemberApp.swift in Sources */,
+				AA000003 /* ContentView.swift in Sources */,
+				AA000005 /* APIClient.swift in Sources */,
+				AA000007 /* APIEndpoints.swift in Sources */,
+				AA000009 /* TokenStorage.swift in Sources */,
+				AA00000B /* Member.swift in Sources */,
+				AA00000D /* BalanceRecord.swift in Sources */,
+				AA00000F /* ScoreRecord.swift in Sources */,
+				AA000011 /* APIResponse.swift in Sources */,
+				AA000013 /* AuthService.swift in Sources */,
+				AA000015 /* MemberService.swift in Sources */,
+				AA000017 /* RechargeService.swift in Sources */,
+				AA000019 /* AuthStore.swift in Sources */,
+				AA00001B /* MemberStore.swift in Sources */,
+				AA00001D /* LoginView.swift in Sources */,
+				AA00001F /* RegisterView.swift in Sources */,
+				AA000021 /* MemberHomeView.swift in Sources */,
+				AA000023 /* ProfileView.swift in Sources */,
+				AA000025 /* BalanceRecordsView.swift in Sources */,
+				AA000027 /* ScoreRecordsView.swift in Sources */,
+				AA000029 /* BalanceRechargeView.swift in Sources */,
+				AA00002B /* ScoreRechargeView.swift in Sources */,
+				AA00002D /* MemberInfoCard.swift in Sources */,
+				AA00002F /* QuickActionButton.swift in Sources */,
+				AA000031 /* RecordRow.swift in Sources */,
+				AA000033 /* MainTabView.swift in Sources */,
+				AA000035 /* SidebarView.swift in Sources */,
+				AA000037 /* MainView.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		AA000900 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		AA000901 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		AA000A00 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_ASSET_PATHS = "\"ZayumMember/Preview Content\"";
+				DEVELOPMENT_TEAM = 5WLKB34MP9;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = ZayumMember/Info.plist;
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.zayum.member;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx";
+				SUPPORTS_MACCATALYST = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		AA000A01 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_ASSET_PATHS = "\"ZayumMember/Preview Content\"";
+				DEVELOPMENT_TEAM = 5WLKB34MP9;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = ZayumMember/Info.plist;
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.zayum.member;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx";
+				SUPPORTS_MACCATALYST = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		AA000700 /* Build configuration list for PBXNativeTarget "ZayumMember" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				AA000A00 /* Debug */,
+				AA000A01 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		AA000801 /* Build configuration list for PBXProject "ZayumMember" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				AA000900 /* Debug */,
+				AA000901 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = AA000800 /* Project object */;
+}

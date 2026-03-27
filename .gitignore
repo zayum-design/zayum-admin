@@ -282,8 +282,11 @@ temp/
 
 #development-guide
 development-guide/
+development-guide-web/
+development-guide-ios/
 
 # Claude
 .claude
 # me
 me.md
+issues/
