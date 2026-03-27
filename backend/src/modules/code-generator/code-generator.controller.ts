@@ -7,6 +7,7 @@ import { CreateMenuDto } from './dto/create-menu.dto';
 import { CreateTableDto } from './dto/create-table.dto';
 import { CheckTableDto } from './dto/check-table.dto';
 import { DeleteCodeDto } from './dto/delete-code.dto';
+import { GenerateFieldsDto } from './dto/generate-fields.dto';
 
 @Controller('api/admin/code-generator')
 export class CodeGeneratorController {
@@ -89,6 +90,16 @@ export class CodeGeneratorController {
     return {
       code: 200,
       message: '删除成功',
+      data: result,
+    };
+  }
+
+  @Post('generate-fields')
+  async generateFields(@Body() dto: GenerateFieldsDto): Promise<any> {
+    const result = await this.codeGeneratorService.generateFields(dto);
+    return {
+      code: 200,
+      message: '字段生成成功',
       data: result,
     };
   }

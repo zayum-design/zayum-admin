@@ -1,4 +1,29 @@
 import request from './request';
+import axios from 'axios';
+
+// 创建AI专用请求实例，超时时间更长（60秒）
+const aiRequest = axios.create({
+  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:3000',
+  timeout: 60000,
+});
+
+// 复制请求拦截器
+aiRequest.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem('auth_token');
+    if (token && config.headers) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
+
+// 复制响应拦截器
+aiRequest.interceptors.response.use(
+  (response) => response.data,
+  (error) => Promise.reject(error.response?.data || error)
+);
 
 export interface TableInfo {
   tableName: string;
@@ -106,6 +131,28 @@ export interface DeleteCodeResponse {
   };
 }
 
+export interface GeneratedField {
+  name: string;
+  type: string;
+  comment?: string;
+  isNullable?: boolean;
+  isPrimaryKey?: boolean;
+}
+
+export interface GenerateFieldsParams {
+  prompt: string;
+  tableName?: string;
+  tableComment?: string;
+}
+
+export interface GenerateFieldsResponse {
+  code: number;
+  message: string;
+  data: {
+    fields: GeneratedField[];
+  };
+}
+
 export const codeGeneratorService = {
   // 获取所有表
   getTables: async (keyword?: string) => {
@@ -166,6 +213,14 @@ export const codeGeneratorService = {
   deleteCode: async (params: DeleteCodeParams) => {
     return request.post<DeleteCodeParams, DeleteCodeResponse>(
       '/api/admin/code-generator/delete-code',
+      params
+    );
+  },
+
+  // AI生成字段（使用更长超时）
+  generateFields: async (params: GenerateFieldsParams) => {
+    return aiRequest.post<GenerateFieldsParams, GenerateFieldsResponse>(
+      '/api/admin/code-generator/generate-fields',
       params
     );
   },

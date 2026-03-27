@@ -41,6 +41,7 @@ import {
   TableOutlined,
   EditOutlined,
   ExclamationCircleOutlined,
+  ThunderboltOutlined,
 } from '@ant-design/icons';
 
 const { Title, Text } = Typography;
@@ -100,6 +101,10 @@ export default function CodeGenerator() {
   const [checkingTableName, setCheckingTableName] = useState(false);
   const [tableNameError, setTableNameError] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<Record<number, string>>({});
+  
+  // AI生成字段相关
+  const [aiPrompt, setAiPrompt] = useState<string>('');
+  const [generatingFields, setGeneratingFields] = useState(false);
   
   // 下载代码相关
   const [downloadModalVisible, setDownloadModalVisible] = useState(false);
@@ -294,6 +299,42 @@ export default function CodeGenerator() {
       isPrimaryKey: false,
     };
     setNewTableFields([...newTableFields, newField]);
+  };
+
+  // AI生成字段
+  const handleGenerateFields = async () => {
+    if (!aiPrompt.trim()) {
+      message.warning('请输入字段生成提示词');
+      return;
+    }
+    
+    setGeneratingFields(true);
+    try {
+      const response = await codeGeneratorService.generateFields({
+        prompt: aiPrompt.trim(),
+        tableName: newTableName || undefined,
+        tableComment: newTableComment || undefined,
+      });
+      
+      if (response.code === 200 && response.data.fields) {
+        // 转换生成的字段并填充到列表（覆盖原有字段）
+        const generatedFields: CreateTableField[] = response.data.fields.map(field => ({
+          name: field.name,
+          type: field.type,
+          comment: field.comment || '',
+          isNullable: field.isNullable !== false,
+          isPrimaryKey: field.isPrimaryKey === true,
+        }));
+        
+        setNewTableFields(generatedFields);
+        setFieldErrors({});
+        message.success(`成功生成 ${generatedFields.length} 个字段`);
+      }
+    } catch (error: any) {
+      message.error(error?.message || 'AI生成字段失败');
+    } finally {
+      setGeneratingFields(false);
+    }
   };
 
   // 删除字段
@@ -865,6 +906,34 @@ export default function CodeGenerator() {
                 <Space>
                   <Text strong>字段定义</Text>
                   <Text type="secondary">（至少需要一个字段，且必须指定一个主键）</Text>
+                </Space>
+              </div>
+              
+              {/* AI生成字段 */}
+              <div style={{ marginBottom: 16, padding: 12, background: '#f6ffed', border: '1px solid #b7eb8f', borderRadius: 6 }}>
+                <Space direction="vertical" style={{ width: '100%' }} size="small">
+                  <Text type="secondary" style={{ fontSize: 12 }}>
+                    <ThunderboltOutlined style={{ marginRight: 4 }} />
+                    AI智能生成字段（输入表用途描述，AI将自动生成合适的字段定义）
+                  </Text>
+                  <Space.Compact style={{ width: '100%' }}>
+                    <Input
+                      placeholder="例如：用户订单表，包含订单号、用户信息、商品详情、金额、状态等字段"
+                      value={aiPrompt}
+                      onChange={(e) => setAiPrompt(e.target.value)}
+                      onPressEnter={handleGenerateFields}
+                      disabled={generatingFields}
+                    />
+                    <Button
+                      type="primary"
+                      icon={<ThunderboltOutlined />}
+                      loading={generatingFields}
+                      onClick={handleGenerateFields}
+                      style={{ background: '#52c41a', borderColor: '#52c41a' }}
+                    >
+                      AI生成字段
+                    </Button>
+                  </Space.Compact>
                 </Space>
               </div>
               

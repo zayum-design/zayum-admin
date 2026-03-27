@@ -63,7 +63,7 @@ function App() {
               <Route path="message/list" element={<NotificationList />} />
               <Route path="profile" element={<ProfilePage />} />
               <Route path="code-generator" element={<CodeGeneratorPage />} />
-            </Route>
+              </Route>
           </Routes>
         </BrowserRouter>
       </AntApp>

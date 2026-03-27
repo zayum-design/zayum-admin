@@ -6,7 +6,7 @@
 ![React](https://img.shields.io/badge/React-19.2+-61DAFB)
 ![NestJS](https://img.shields.io/badge/NestJS-11.0+-E0234E)
 
-一个现代化的企业级后台管理系统，基于前后端分离架构，提供完整的用户管理、权限控制、系统监控等功能。
+一个现代化的企业级后台管理系统，基于前后端分离架构，提供完整的用户管理、权限控制、系统监控等功能。同时包含可视化代码生成器、Web/iOS 会员中心应用，支持多端协同。
 
 ## 🐟 关于 Zayum
 
@@ -30,6 +30,9 @@
 - **文件管理**：文件上传、下载、在线预览
 - **日志管理**：操作日志、登录日志记录与查询
 - **消息通知**：站内消息、通知管理
+- **代码生成器**：可视化数据表设计、前后端代码自动生成、菜单自动创建
+- **用户余额**：余额记录查询、充值管理
+- **用户积分**：积分记录查询、积分变动管理
 
 ### 🛡️ 安全特性
 - **密码加密存储**：使用bcrypt进行密码哈希
@@ -48,6 +51,7 @@
 - **API文档**：Swagger（待集成）
 - **日志**：Winston
 - **安全**：Helmet、bcrypt、CORS
+- **AI集成**：支持 DeepSeek、OpenAI、通义千问、Moonshot 等多模型
 
 ### 前端技术栈
 - **框架**：React 19.x + TypeScript
@@ -72,7 +76,14 @@ zayum-admin/
 │   │   ├── modules/        # 业务模块
 │   │   │   ├── auth/       # 认证模块
 │   │   │   ├── user/       # 用户模块
-│   │   │   ├── system/     # 系统模块
+│   │   │   ├── admin/      # 管理员模块
+│   │   │   ├── permission/ # 权限模块
+│   │   │   ├── code-generator/  # 代码生成器模块
+│   │   │   ├── member/     # 会员中心模块
+│   │   │   ├── user-balance/  # 用户余额模块
+│   │   │   ├── user-score/    # 用户积分模块
+│   │   │   ├── upload/     # 文件上传模块
+│   │   │   ├── log/        # 日志模块
 │   │   │   └── ...
 │   │   ├── entities/       # 数据库实体
 │   │   ├── database/       # 数据库配置和种子数据
@@ -84,6 +95,9 @@ zayum-admin/
 │   │   │   ├── dashboard/ # 仪表盘
 │   │   │   ├── user/      # 用户管理
 │   │   │   ├── system/    # 系统管理
+│   │   │   ├── code-generator/  # 代码生成器
+│   │   │   ├── user-balance/  # 用户余额
+│   │   │   ├── user-score/    # 用户积分
 │   │   │   └── ...
 │   │   ├── components/    # 公共组件
 │   │   ├── layouts/       # 布局组件
@@ -97,11 +111,20 @@ zayum-admin/
 │   └── package.json
 ├── app/                    # 客户端应用
 │   ├── web/               # Web 应用（会员端）
-│   │   ├── src/           # 源码
+│   │   ├── src/
+│   │   │   ├── pages/
+│   │   │   │   ├── login/     # 会员登录
+│   │   │   │   ├── register/  # 会员注册
+│   │   │   │   ├── member/    # 会员中心
+│   │   │   │   └── recharge/  # 充值页面
+│   │   │   ├── services/  # API服务
+│   │   │   └── store/     # 状态管理
 │   │   └── package.json
 │   └── ios/               # iOS 原生应用
 │       └── ZayumMember/   # iOS 项目
-├── development-guide/      # 开发指南文档
+├── development-guide/      # 后端开发指南文档
+├── development-guide-web/  # Web App 开发指南文档
+├── development-guide-ios/  # iOS App 开发指南文档
 └── README.md              # 项目说明文档
 ```
 
@@ -170,7 +193,7 @@ zayum-admin/
    - 后端API：http://localhost:3000
    - 前端应用：http://localhost:5173
 
-### Web App 配置
+### Web App 会员端配置
 
 1. **进入 Web App 目录**
    ```bash
@@ -189,6 +212,14 @@ zayum-admin/
 
 4. **访问应用**
    - Web App：http://localhost:5174
+
+### Web App 功能说明
+
+- **会员注册/登录**：支持手机号+验证码快速注册登录
+- **会员中心**：查看个人信息、余额、积分
+- **余额充值**：在线充值账户余额
+- **积分记录**：查看积分获取和消费记录
+- **订单管理**：查看会员订单列表和详情
 
 ### iOS App 配置
 
@@ -249,7 +280,7 @@ npm run seed
 
 ## 🤖 AI CLI 代码生成器
 
-项目内置了 AI 驱动的 CLI 工具，支持对话式代码生成：
+项目内置了 AI 驱动的 CLI 工具，支持对话式代码生成和智能代码管理：
 
 ### 安装与启动
 ```bash
@@ -268,6 +299,69 @@ cd ..
 - **自动注册**：自动将新模块注册到 app.module.ts
 - **菜单生成**：自动生成后端菜单配置
 - **多模型支持**：支持 DeepSeek、OpenAI、通义千问、Moonshot
+- **代码清理**：支持一键删除数据表对应的所有源码文件
+
+## 🎨 可视化代码生成器
+
+系统内置可视化代码生成器，通过界面操作即可快速创建功能模块：
+
+### 功能特性
+- **数据表设计**：可视化创建和编辑数据库表结构
+- **字段管理**：支持多种数据类型、默认值、注释、索引设置
+- **代码生成**：自动生成完整的后端代码（Entity、DTO、Service、Controller、Module）
+- **前端生成**：自动生成前端页面代码（列表页、表单页、服务层）
+- **菜单创建**：自动生成系统菜单配置和权限点
+- **代码预览**：在线预览生成的代码文件
+- **代码下载**：支持打包下载生成的源代码
+- **代码清理**：一键删除数据表对应的所有源码文件
+
+### 使用方式
+1. 登录管理后台 → 系统管理 → 代码生成器
+2. 创建数据表并设计字段
+3. 选择生成选项（后端/前端/菜单）
+4. 预览并确认生成的代码
+5. 保存代码到项目或直接下载
+
+## 📱 Web App 会员中心
+
+为系统提供客户端会员中心功能，支持用户注册、登录、充值等：
+
+### 功能特性
+- **会员注册/登录**：支持手机号+验证码注册登录
+- **会员中心**：个人信息管理、余额/积分查看
+- **余额管理**：余额充值、余额消费记录
+- **积分管理**：积分获取、积分消费记录
+- **订单管理**：订单查询、订单状态跟踪
+
+### 技术栈
+- React 19 + TypeScript + Vite 8
+- Ant Design 6 + Tailwind CSS 3
+- Zustand 状态管理
+
+### 启动方式
+```bash
+cd app/web
+npm install
+npm run dev
+# 访问 http://localhost:5174
+```
+
+## 🍎 iOS App 会员中心
+
+原生 iOS 会员中心应用，提供流畅的移动端体验：
+
+### 功能特性
+- **会员认证**：登录、注册、验证码获取
+- **个人中心**：会员信息展示、余额/积分显示
+- **记录查询**：余额记录、积分记录查看
+- **充值功能**：余额充值、积分充值
+
+### 启动方式
+```bash
+cd app/ios/ZayumMember
+open ZayumMember.xcodeproj
+# 在 Xcode 中选择模拟器或设备运行
+```
 
 ### 工作流程
 1. 描述需求：告诉 AI 你想开发什么功能
@@ -316,6 +410,37 @@ cd ..
 - `PUT /api/permissions/:id` - 更新权限
 - `DELETE /api/permissions/:id` - 删除权限
 
+### 代码生成器接口
+- `GET /api/code-generator/tables` - 获取数据库表列表
+- `POST /api/code-generator/tables` - 创建数据表
+- `GET /api/code-generator/tables/:table/columns` - 获取表字段
+- `POST /api/code-generator/tables/check` - 检查表是否存在
+- `POST /api/code-generator/generate` - 生成代码
+- `POST /api/code-generator/menus` - 创建菜单
+- `POST /api/code-generator/download` - 下载代码
+- `POST /api/code-generator/delete` - 删除代码
+
+### 用户余额接口
+- `GET /api/user-balances` - 获取余额记录列表
+- `POST /api/user-balances` - 创建余额记录
+- `POST /api/user-balances/recharge` - 余额充值
+
+### 用户积分接口
+- `GET /api/user-scores` - 获取积分记录列表
+- `POST /api/user-scores` - 创建积分记录
+- `POST /api/user-scores/recharge` - 积分充值
+
+### 会员中心接口
+- `POST /api/member/register` - 会员注册
+- `POST /api/member/login` - 会员登录
+- `POST /api/member/sms-code` - 发送验证码
+- `GET /api/member/profile` - 获取会员信息
+- `PUT /api/member/profile` - 更新会员信息
+- `GET /api/member/balance-records` - 余额记录
+- `GET /api/member/score-records` - 积分记录
+- `POST /api/member/recharge/balance` - 余额充值
+- `POST /api/member/recharge/score` - 积分充值
+
 ## 🐳 Docker部署
 
 ### 使用Docker Compose
@@ -355,7 +480,7 @@ services:
     depends_on:
       - backend
 
-  webapp:
+  webapp-member:
     build: ./app/web
     ports:
       - "5174:5174"

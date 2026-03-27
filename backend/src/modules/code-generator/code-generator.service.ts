@@ -9,6 +9,8 @@ import { DownloadCodeDto } from './dto/download-code.dto';
 import { CreateMenuDto } from './dto/create-menu.dto';
 import { CreateTableDto, CreateTableFieldDto } from './dto/create-table.dto';
 import { DeleteCodeDto } from './dto/delete-code.dto';
+import { AiService } from '../ai/ai.service';
+import { GenerateFieldsDto, GeneratedField, GenerateFieldsResponse } from './dto/generate-fields.dto';
 
 interface TableInfo {
   tableName: string;
@@ -39,6 +41,7 @@ export class CodeGeneratorService {
   constructor(
     @InjectDataSource()
     private dataSource: DataSource,
+    private readonly aiService: AiService,
   ) { }
 
   // 获取所有表
@@ -258,6 +261,9 @@ export class CodeGeneratorService {
 
   // 生成 Entity (TypeORM 实体类)
   private generateEntity(entityName: string, tableName: string, columns: ColumnInfo[]): string {
+    let hasCreateDateColumn = false;
+    let hasUpdateDateColumn = false;
+
     const fields = columns.map(col => {
       const decorators: string[] = [];
       const tsType = this.dbTypeToTsType(col.dataType);
@@ -266,6 +272,36 @@ export class CodeGeneratorService {
       // 主键
       if (col.isPrimaryKey) {
         decorators.push('  @PrimaryGeneratedColumn()');
+      } else if (col.columnName === 'created_at' || col.columnName === 'createdAt') {
+        // 自动创建时间
+        hasCreateDateColumn = true;
+        const columnOptions: string[] = [];
+        if (dbType) {
+          columnOptions.push(`type: '${dbType}'`);
+        }
+        if (col.columnComment) {
+          columnOptions.push(`comment: '${col.columnComment.replace(/'/g, "\\'")}'`);
+        }
+        if (columnOptions.length > 0) {
+          decorators.push(`  @CreateDateColumn({ ${columnOptions.join(', ')} })`);
+        } else {
+          decorators.push('  @CreateDateColumn()');
+        }
+      } else if (col.columnName === 'updated_at' || col.columnName === 'updatedAt') {
+        // 自动更新时间
+        hasUpdateDateColumn = true;
+        const columnOptions: string[] = [];
+        if (dbType) {
+          columnOptions.push(`type: '${dbType}'`);
+        }
+        if (col.columnComment) {
+          columnOptions.push(`comment: '${col.columnComment.replace(/'/g, "\\'")}'`);
+        }
+        if (columnOptions.length > 0) {
+          decorators.push(`  @UpdateDateColumn({ ${columnOptions.join(', ')} })`);
+        } else {
+          decorators.push('  @UpdateDateColumn()');
+        }
       } else {
         // 普通列
         const columnOptions: string[] = [];
@@ -274,6 +310,8 @@ export class CodeGeneratorService {
         }
         if (!col.isNullable) {
           columnOptions.push('nullable: false');
+        } else {
+          columnOptions.push('nullable: true');
         }
         // 添加注释到 Column 装饰器中
         if (col.columnComment) {
@@ -290,7 +328,12 @@ export class CodeGeneratorService {
       return `${decorators.join('\n')}\n  ${col.columnName}: ${tsType};`;
     }).join('\n\n');
 
-    return `import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
+    // 构建 imports
+    const imports = ['Entity', 'Column', 'PrimaryGeneratedColumn'];
+    if (hasCreateDateColumn) imports.push('CreateDateColumn');
+    if (hasUpdateDateColumn) imports.push('UpdateDateColumn');
+
+    return `import { ${imports.join(', ')} } from 'typeorm';
 
 @Entity('${tableName}')
 export class ${entityName} {
@@ -323,6 +366,11 @@ ${fields}
 
   // 生成 Create DTO
   private generateCreateDto(entityName: string, columns: ColumnInfo[]): string {
+    const hasNumberField = columns.some(col => {
+      const tsType = this.dbTypeToTsType(col.dataType);
+      return tsType === 'number' && !col.isPrimaryKey && col.columnName !== 'created_at' && col.columnName !== 'updated_at';
+    });
+
     const fields = columns
       .filter(col => !col.isPrimaryKey && col.columnName !== 'created_at' && col.columnName !== 'updated_at')
       .map(col => {
@@ -339,6 +387,7 @@ ${fields}
         if (tsType === 'string') {
           decorators.push('  @IsString()');
         } else if (tsType === 'number') {
+          decorators.push('  @Transform(({ value }) => Number(value))');
           decorators.push('  @IsNumber()');
         } else if (tsType === 'boolean') {
           decorators.push('  @IsBoolean()');
@@ -349,7 +398,11 @@ ${fields}
         return `${decorators.join('\n')}\n  ${col.columnName}${col.isNullable ? '?' : ''}: ${tsType};`;
       }).join('\n\n');
 
-    return `import { IsNotEmpty, IsOptional, IsString, IsNumber, IsBoolean, IsDate } from 'class-validator';
+    const imports = hasNumberField 
+      ? `import { IsNotEmpty, IsOptional, IsString, IsNumber, IsBoolean, IsDate } from 'class-validator';\nimport { Transform } from 'class-transformer';`
+      : `import { IsNotEmpty, IsOptional, IsString, IsNumber, IsBoolean, IsDate } from 'class-validator';`;
+
+    return `${imports}
 
 export class Create${entityName}Dto {
 ${fields}
@@ -358,6 +411,11 @@ ${fields}
 
   // 生成 Update DTO
   private generateUpdateDto(entityName: string, columns: ColumnInfo[]): string {
+    const hasNumberField = columns.some(col => {
+      const tsType = this.dbTypeToTsType(col.dataType);
+      return tsType === 'number' && !col.isPrimaryKey && col.columnName !== 'created_at' && col.columnName !== 'updated_at';
+    });
+
     const fields = columns
       .filter(col => !col.isPrimaryKey && col.columnName !== 'created_at' && col.columnName !== 'updated_at')
       .map(col => {
@@ -367,6 +425,7 @@ ${fields}
         if (tsType === 'string') {
           decorators.push('  @IsString()');
         } else if (tsType === 'number') {
+          decorators.push('  @Transform(({ value }) => value !== undefined ? Number(value) : undefined)');
           decorators.push('  @IsNumber()');
         } else if (tsType === 'boolean') {
           decorators.push('  @IsBoolean()');
@@ -377,7 +436,11 @@ ${fields}
         return `${decorators.join('\n')}\n  ${col.columnName}?: ${tsType};`;
       }).join('\n\n');
 
-    return `import { IsOptional, IsString, IsNumber, IsBoolean, IsDate } from 'class-validator';
+    const imports = hasNumberField 
+      ? `import { IsOptional, IsString, IsNumber, IsBoolean, IsDate } from 'class-validator';\nimport { Transform } from 'class-transformer';`
+      : `import { IsOptional, IsString, IsNumber, IsBoolean, IsDate } from 'class-validator';`;
+
+    return `${imports}
 
 export class Update${entityName}Dto {
 ${fields}
@@ -391,12 +454,23 @@ ${fields}
       return tsType === 'string';
     });
 
-    const fields = searchableColumns.map(col => {
+    const stringFields = searchableColumns.map(col => {
       return `  @IsOptional()\n  @IsString()\n  ${col.columnName}?: string;`;
     }).join('\n\n');
 
+    const numberSearchableColumns = columns.filter(col => {
+      const tsType = this.dbTypeToTsType(col.dataType);
+      return tsType === 'number' && !col.isPrimaryKey;
+    });
+
+    const numberFields = numberSearchableColumns.map(col => {
+      return `  @IsOptional()\n  @Transform(({ value }) => value !== undefined ? Number(value) : undefined)\n  @IsNumber()\n  ${col.columnName}?: number;`;
+    }).join('\n\n');
+
+    const hasNumberSearchField = numberSearchableColumns.length > 0;
+
     return `import { IsOptional, IsString, IsNumber } from 'class-validator';
-import { Type } from 'class-transformer';
+import { Type, Transform } from 'class-transformer';
 
 export class Query${entityName}Dto {
   @IsOptional()
@@ -407,7 +481,7 @@ export class Query${entityName}Dto {
   @IsOptional()
   @Type(() => Number)
   @IsNumber()
-  pageSize?: number = 10;${fields ? '\n\n' + fields : ''}
+  pageSize?: number = 10;${stringFields ? '\n\n' + stringFields : ''}${numberFields ? '\n\n' + numberFields : ''}
 }`;
   }
 
@@ -1017,8 +1091,9 @@ export const ${moduleCamelName}Service = {
   async createMenu(dto: CreateMenuDto): Promise<{ menuId: number; message: string }> {
     const { tableName, menuName, parentCode = 'system', sort = 0 } = dto;
 
-    // 转换表名为代码
-    const menuCode = tableName.replace(/_/g, '-');
+    // 使用与代码生成一致的模块名（去掉 sys_ 等前缀）
+    const moduleName = this.getModuleName(tableName);
+    const menuCode = moduleName.replace(/_/g, '-');
     const path = `/admin/${menuCode}`;
 
     // 检查菜单是否已存在
@@ -1352,8 +1427,9 @@ export const ${moduleCamelName}Service = {
    * 根据表名删除对应的菜单及权限
    */
   private async deleteMenuByTableName(tableName: string): Promise<boolean> {
-    // 生成 menuCode（与创建时保持一致）
-    const menuCode = tableName.replace(/_/g, '-');
+    // 生成 menuCode（与创建时保持一致，使用去掉前缀的模块名）
+    const moduleName = this.getModuleName(tableName);
+    const menuCode = moduleName.replace(/_/g, '-');
 
     // 查找菜单
     const menuResult = await this.dataSource.query(
@@ -1444,5 +1520,142 @@ export const ${moduleCamelName}Service = {
     }
 
     return false;
+  }
+
+  // AI生成表字段
+  async generateFields(dto: GenerateFieldsDto): Promise<GenerateFieldsResponse> {
+    const { prompt, tableName, tableComment } = dto;
+
+    const systemPrompt = `你是一个数据库表结构设计专家。请根据用户的需求生成PostgreSQL数据库表的字段定义。
+
+要求：
+1. 返回JSON格式，包含fields数组
+2. 每个字段包含：name(字段名，使用小写+下划线命名)、type(类型，使用以下之一：serial,bigserial,integer,bigint,varchar,text,decimal,boolean,timestamp,timestamptz,date,time,uuid,json,jsonb)、comment(注释)、isNullable(是否可空)、isPrimaryKey(是否主键)
+3. 必须包含一个主键字段(推荐用serial或bigserial类型)
+4. 字段名必须符合PostgreSQL命名规范：小写字母、数字和下划线，不能以数字开头
+5. 根据表名和注释自动推断合适的字段
+
+可用字段类型：
+- serial: 自增整数（主键推荐）
+- bigserial: 自增大整数（主键推荐）
+- integer: 整数
+- bigint: 大整数
+- varchar: 字符串(255字符)
+- text: 长文本
+- decimal: 小数(10,2)
+- boolean: 布尔值
+- timestamp: 时间戳
+- timestamptz: 带时区时间戳
+- date: 日期
+- time: 时间
+- uuid: UUID
+- json: JSON
+- jsonb: 二进制JSON
+
+请只返回JSON格式，不要返回任何解释文字。格式示例：
+{
+  "fields": [
+    { "name": "id", "type": "serial", "comment": "主键ID", "isNullable": false, "isPrimaryKey": true },
+    { "name": "name", "type": "varchar", "comment": "名称", "isNullable": false, "isPrimaryKey": false }
+  ]
+}`;
+
+    const userPrompt = `表名：${tableName || '未指定'}
+表注释：${tableComment || '未指定'}
+用户需求：${prompt}
+
+请生成合适的字段定义，只返回JSON格式。`;
+
+    try {
+      const response = await this.aiService.chat({
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: userPrompt }
+        ],
+        temperature: 0.7,
+        maxTokens: 2000,
+      });
+
+      // 解析AI返回的内容
+      const content = response.content.trim();
+      
+      // 尝试提取JSON部分（AI可能返回带markdown格式的内容）
+      let jsonStr = content;
+      const jsonMatch = content.match(/```json\s*([\s\S]*?)```/) || 
+                        content.match(/```\s*([\s\S]*?)```/) ||
+                        content.match(/(\{[\s\S]*\})/);
+      
+      if (jsonMatch) {
+        jsonStr = jsonMatch[1] || jsonMatch[0];
+      }
+
+      const result = JSON.parse(jsonStr);
+      
+      if (!result.fields || !Array.isArray(result.fields)) {
+        throw new BadRequestException('AI返回格式错误，缺少fields数组');
+      }
+
+      // 验证字段格式
+      const validFields: GeneratedField[] = result.fields.map((field: any) => ({
+        name: field.name?.toLowerCase().replace(/[^a-z0-9_]/g, '_').replace(/^_+|_+$/g, '') || 'unnamed',
+        type: this.normalizeFieldType(field.type),
+        comment: field.comment || '',
+        isNullable: field.isNullable !== false, // 默认为true
+        isPrimaryKey: field.isPrimaryKey === true,
+      }));
+
+      // 确保至少有一个主键
+      const hasPrimaryKey = validFields.some((f: GeneratedField) => f.isPrimaryKey);
+      if (!hasPrimaryKey && validFields.length > 0) {
+        // 如果没有主键，将第一个字段设为主键或添加id字段
+        const idField = validFields.find((f: GeneratedField) => f.name === 'id');
+        if (idField) {
+          idField.isPrimaryKey = true;
+          idField.isNullable = false;
+          idField.type = idField.type === 'serial' || idField.type === 'bigserial' ? idField.type : 'serial';
+        } else {
+          validFields.unshift({
+            name: 'id',
+            type: 'serial',
+            comment: '主键ID',
+            isNullable: false,
+            isPrimaryKey: true,
+          });
+        }
+      }
+
+      return { fields: validFields };
+    } catch (error) {
+      console.error('[CodeGenerator] AI generate fields error:', error);
+      throw new BadRequestException(`AI生成字段失败: ${error.message}`);
+    }
+  }
+
+  // 规范化字段类型
+  private normalizeFieldType(type: string): string {
+    const validTypes = [
+      'serial', 'bigserial', 'integer', 'bigint', 'smallint',
+      'varchar', 'text', 'decimal', 'boolean',
+      'timestamp', 'timestamptz', 'date', 'time',
+      'uuid', 'json', 'jsonb'
+    ];
+    
+    const normalized = (type || 'varchar').toLowerCase().trim();
+    
+    // 类型映射
+    const typeMap: Record<string, string> = {
+      'int': 'integer',
+      'string': 'varchar',
+      'str': 'varchar',
+      'float': 'decimal',
+      'double': 'decimal',
+      'number': 'integer',
+      'bool': 'boolean',
+      'datetime': 'timestamp',
+    };
+    
+    const mappedType = typeMap[normalized] || normalized;
+    
+    return validTypes.includes(mappedType) ? mappedType : 'varchar';
   }
 }
