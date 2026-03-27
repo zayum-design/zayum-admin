@@ -8,6 +8,7 @@ import { GenerateCodeDto } from './dto/generate-code.dto';
 import { DownloadCodeDto } from './dto/download-code.dto';
 import { CreateMenuDto } from './dto/create-menu.dto';
 import { CreateTableDto, CreateTableFieldDto } from './dto/create-table.dto';
+import { DeleteCodeDto } from './dto/delete-code.dto';
 
 interface TableInfo {
   tableName: string;
@@ -1216,5 +1217,232 @@ export const ${moduleCamelName}Service = {
     const primaryDef = isPrimaryKey ? ' PRIMARY KEY' : '';
 
     return `${name} ${typeDef}${nullableDef}${primaryDef}`;
+  }
+
+  // 删除代码
+  async deleteCode(dto: DeleteCodeDto): Promise<{ files: string[]; success: boolean; message: string }> {
+    const { tableName } = dto;
+
+    console.log('[CodeGenerator] deleteCode called:', { tableName });
+
+    // 提取无前缀的模块名（如 sys_user -> user）
+    const moduleName = this.getModuleName(tableName);
+    const entityName = this.toPascalCase(tableName);
+    const entityFileName = tableName.replace(/_/g, '-');
+    const moduleKebabName = moduleName.replace(/_/g, '-');
+
+    // 项目根目录
+    const rootDir = path.resolve(process.cwd(), '..');
+
+    const deletedFiles: string[] = [];
+    const failedFiles: string[] = [];
+
+    // 定义需要删除的文件列表
+    const filesToDelete = [
+      // Entity
+      { path: path.join(rootDir, 'backend', 'src', 'entities', `${entityFileName}.entity.ts`), type: 'entity' },
+      // DTOs
+      { path: path.join(rootDir, 'backend', 'src', 'modules', moduleKebabName, 'dto', `create-${moduleKebabName}.dto.ts`), type: 'dto' },
+      { path: path.join(rootDir, 'backend', 'src', 'modules', moduleKebabName, 'dto', `update-${moduleKebabName}.dto.ts`), type: 'dto' },
+      { path: path.join(rootDir, 'backend', 'src', 'modules', moduleKebabName, 'dto', `query-${moduleKebabName}.dto.ts`), type: 'dto' },
+      // Service, Controller, Module
+      { path: path.join(rootDir, 'backend', 'src', 'modules', moduleKebabName, `${moduleKebabName}.service.ts`), type: 'service' },
+      { path: path.join(rootDir, 'backend', 'src', 'modules', moduleKebabName, `${moduleKebabName}.controller.ts`), type: 'controller' },
+      { path: path.join(rootDir, 'backend', 'src', 'modules', moduleKebabName, `${moduleKebabName}.module.ts`), type: 'module' },
+      // Frontend
+      { path: path.join(rootDir, 'frontend', 'src', 'pages', moduleKebabName, 'index.tsx'), type: 'frontend-page' },
+      { path: path.join(rootDir, 'frontend', 'src', 'services', `${moduleKebabName}.service.ts`), type: 'frontend-service' },
+    ];
+
+    // 删除文件
+    for (const file of filesToDelete) {
+      try {
+        if (await fs.pathExists(file.path)) {
+          await fs.remove(file.path);
+          deletedFiles.push(file.path.replace(rootDir + path.sep, ''));
+          console.log('[CodeGenerator] file deleted:', file.path);
+        }
+      } catch (error) {
+        failedFiles.push(`${file.path}: ${error.message}`);
+        console.error('[CodeGenerator] failed to delete file:', file.path, error.message);
+      }
+    }
+
+    // 尝试删除空的模块目录
+    const moduleDir = path.join(rootDir, 'backend', 'src', 'modules', moduleKebabName);
+    try {
+      if (await fs.pathExists(moduleDir)) {
+        const files = await fs.readdir(moduleDir);
+        if (files.length === 0) {
+          await fs.rmdir(moduleDir);
+          console.log('[CodeGenerator] empty module dir removed:', moduleDir);
+        }
+      }
+    } catch (error) {
+      console.error('[CodeGenerator] failed to remove module dir:', moduleDir, error.message);
+    }
+
+    // 尝试删除空的前端页面目录
+    const pageDir = path.join(rootDir, 'frontend', 'src', 'pages', moduleKebabName);
+    try {
+      if (await fs.pathExists(pageDir)) {
+        const files = await fs.readdir(pageDir);
+        if (files.length === 0) {
+          await fs.rmdir(pageDir);
+          console.log('[CodeGenerator] empty page dir removed:', pageDir);
+        }
+      }
+    } catch (error) {
+      console.error('[CodeGenerator] failed to remove page dir:', pageDir, error.message);
+    }
+
+    // 从 App.tsx 和 app.module.ts 中移除引用
+    const autoUnregisterResults: string[] = [];
+
+    try {
+      // 1. 从 App.tsx 移除路由
+      const appTsxPath = path.join(rootDir, 'frontend', 'src', 'App.tsx');
+      if (await fs.pathExists(appTsxPath)) {
+        const appUpdated = await this.removeFrontendRoutes(appTsxPath, entityName, moduleKebabName);
+        if (appUpdated) {
+          autoUnregisterResults.push('前端路由已从 App.tsx 移除');
+        }
+      }
+    } catch (error) {
+      autoUnregisterResults.push(`前端路由移除失败: ${error.message}`);
+    }
+
+    try {
+      // 2. 从 app.module.ts 移除模块
+      const appModulePath = path.join(rootDir, 'backend', 'src', 'app.module.ts');
+      if (await fs.pathExists(appModulePath)) {
+        const moduleUpdated = await this.removeBackendModule(appModulePath, entityName, moduleKebabName);
+        if (moduleUpdated) {
+          autoUnregisterResults.push('后端模块已从 app.module.ts 移除');
+        }
+      }
+    } catch (error) {
+      autoUnregisterResults.push(`后端模块移除失败: ${error.message}`);
+    }
+
+    // 3. 删除菜单及权限
+    try {
+      const menuDeleted = await this.deleteMenuByTableName(tableName);
+      if (menuDeleted) {
+        autoUnregisterResults.push('菜单及权限已删除');
+      }
+    } catch (error) {
+      autoUnregisterResults.push(`菜单删除失败: ${error.message}`);
+    }
+
+    const autoUnregisterMsg = autoUnregisterResults.length > 0
+      ? `；自动注销: ${autoUnregisterResults.join(', ')}`
+      : '';
+
+    return {
+      files: deletedFiles,
+      success: failedFiles.length === 0,
+      message: failedFiles.length === 0
+        ? `成功删除 ${deletedFiles.length} 个文件${autoUnregisterMsg}`
+        : `删除 ${deletedFiles.length} 个文件，失败 ${failedFiles.length} 个: ${failedFiles.join(', ')}`,
+    };
+  }
+
+  /**
+   * 根据表名删除对应的菜单及权限
+   */
+  private async deleteMenuByTableName(tableName: string): Promise<boolean> {
+    // 生成 menuCode（与创建时保持一致）
+    const menuCode = tableName.replace(/_/g, '-');
+
+    // 查找菜单
+    const menuResult = await this.dataSource.query(
+      'SELECT id FROM sys_permission WHERE code = $1 AND type = $2',
+      [menuCode, 'menu']
+    );
+
+    if (menuResult.length === 0) {
+      return false; // 菜单不存在
+    }
+
+    const menuId = menuResult[0].id;
+
+    // 删除该菜单下的所有按钮权限
+    await this.dataSource.query(
+      'DELETE FROM sys_permission WHERE parent_id = $1 AND type = $2',
+      [menuId, 'button']
+    );
+
+    // 删除菜单
+    await this.dataSource.query(
+      'DELETE FROM sys_permission WHERE id = $1',
+      [menuId]
+    );
+
+    console.log('[CodeGenerator] menu and permissions deleted for:', menuCode);
+    return true;
+  }
+
+  /**
+   * 从 App.tsx 中移除路由
+   */
+  private async removeFrontendRoutes(appTsxPath: string, entityName: string, kebabName: string): Promise<boolean> {
+    let content = await fs.readFile(appTsxPath, 'utf-8');
+    const originalContent = content;
+
+    const pageComponentName = `${entityName}Page`;
+    const importPath = `./pages/${kebabName}`;
+
+    // 1. 移除 import 语句
+    const importRegex = new RegExp(`import\\s+${pageComponentName}\\s+from\\s+'${importPath}';?\\n`, 'g');
+    content = content.replace(importRegex, '');
+
+    // 2. 移除 Route 组件
+    // 匹配模式: <Route path="kebabName" element={<PageComponent />} />
+    const routeRegex = new RegExp(`\\s*<Route\\s+path="${kebabName}"\\s+element={<${pageComponentName}\\s*/>}\\s*/>`, 'g');
+    content = content.replace(routeRegex, '');
+
+    // 3. 清理多余的空行
+    content = content.replace(/\n{3,}/g, '\n\n');
+
+    if (content !== originalContent) {
+      await fs.writeFile(appTsxPath, content, 'utf-8');
+      console.log('[CodeGenerator] App.tsx updated, removed route for:', kebabName);
+      return true;
+    }
+
+    return false;
+  }
+
+  /**
+   * 从 app.module.ts 中移除模块
+   */
+  private async removeBackendModule(appModulePath: string, entityName: string, kebabName: string): Promise<boolean> {
+    let content = await fs.readFile(appModulePath, 'utf-8');
+    const originalContent = content;
+
+    const moduleClassName = `${entityName}Module`;
+    const importPath = `./modules/${kebabName}/${kebabName}.module`;
+
+    // 1. 移除 import 语句
+    const importRegex = new RegExp(`import\\s+{\\s*${moduleClassName}\\s*}\\s+from\\s+'${importPath}';?\\n`, 'g');
+    content = content.replace(importRegex, '');
+
+    // 2. 从 imports 数组中移除模块引用
+    // 匹配: ModuleName, 或 , ModuleName 或 ModuleName
+    const moduleInArrayRegex = new RegExp(`\\s*${moduleClassName},?`, 'g');
+    content = content.replace(moduleInArrayRegex, '');
+
+    // 3. 清理多余的空行和逗号
+    content = content.replace(/,\s*\n\s*\]/g, ',\n  ]'); // 修复 imports 数组结尾
+    content = content.replace(/\n{3,}/g, '\n\n');
+
+    if (content !== originalContent) {
+      await fs.writeFile(appModulePath, content, 'utf-8');
+      console.log('[CodeGenerator] app.module.ts updated, removed module:', moduleClassName);
+      return true;
+    }
+
+    return false;
   }
 }

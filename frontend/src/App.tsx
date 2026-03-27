@@ -21,7 +21,6 @@ import ProfilePage from './pages/profile';
 import UserScorePage from './pages/user-score';
 import UserBalancePage from './pages/user-balance';
 import CodeGeneratorPage from './pages/code-generator';
-import SysTestPage from './pages/test';
 
 function App() {
   return (
@@ -64,8 +63,7 @@ function App() {
               <Route path="message/list" element={<NotificationList />} />
               <Route path="profile" element={<ProfilePage />} />
               <Route path="code-generator" element={<CodeGeneratorPage />} />
-                          <Route path="test" element={<SysTestPage />} />
-              </Route>
+            </Route>
           </Routes>
         </BrowserRouter>
       </AntApp>

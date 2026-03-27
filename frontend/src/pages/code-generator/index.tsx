@@ -24,7 +24,7 @@ import {
   Tooltip,
 } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
-import { codeGeneratorService, type TableInfo, type ColumnInfo, type GeneratedFile, type CreateTableField } from '../../services/code-generator.service';
+import { codeGeneratorService, type TableInfo, type GeneratedFile, type CreateTableField } from '../../services/code-generator.service';
 import { codeToHtml } from 'shiki';
 import { 
   FileOutlined, 
@@ -40,6 +40,7 @@ import {
   DeleteOutlined,
   TableOutlined,
   EditOutlined,
+  ExclamationCircleOutlined,
 } from '@ant-design/icons';
 
 const { Title, Text } = Typography;
@@ -110,6 +111,11 @@ export default function CodeGenerator() {
   const [menuModalVisible, setMenuModalVisible] = useState(false);
   const [creatingMenu, setCreatingMenu] = useState(false);
   const [menuForm] = Form.useForm();
+
+  // 删除代码相关
+  const [deleteModalVisible, setDeleteModalVisible] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [deleteResult, setDeleteResult] = useState<{ files: string[]; success: boolean; message: string } | null>(null);
 
   // 加载表列表
   useEffect(() => {
@@ -542,6 +548,41 @@ export default function CodeGenerator() {
     }
   };
 
+  // 删除全部代码
+  const handleDeleteCode = async () => {
+    const targetTableName = step1ActiveTab === 'existing' ? selectedTable : newTableName;
+    
+    if (!targetTableName) {
+      message.warning('请先选择数据表');
+      return;
+    }
+
+    setDeleting(true);
+    try {
+      const response = await codeGeneratorService.deleteCode({
+        tableName: targetTableName,
+      });
+      if (response.code === 200) {
+        setDeleteResult(response.data);
+        if (response.data.success) {
+          message.success(response.data.message);
+          // 重置相关状态
+          setSelectedTable('');
+          setColumns([]);
+          setSelectedColumns([]);
+          setGeneratedFiles([]);
+          setActiveTab('');
+        } else {
+          message.warning(response.data.message);
+        }
+      }
+    } catch (error: any) {
+      message.error(error?.message || '删除代码失败');
+    } finally {
+      setDeleting(false);
+    }
+  };
+
   // 表格列定义
   const columnTableColumns: ColumnsType<ColumnSelection> = [
     {
@@ -734,21 +775,35 @@ export default function CodeGenerator() {
             tab={<span><TableOutlined /> 已有表</span>} 
             key="existing"
           >
-            <Select
-              showSearch
-              placeholder="请选择数据表"
-              style={{ width: '100%', maxWidth: 500 }}
-              loading={loadingTables}
-              value={selectedTable || undefined}
-              onChange={handleTableChange}
-              optionFilterProp="label"
-              options={tables.map((table) => ({
-                value: table.tableName,
-                label: table.tableComment
-                  ? `${table.tableName} (${table.tableComment})`
-                  : table.tableName,
-              }))}
-            />
+            <Space direction="vertical" style={{ width: '100%' }}>
+              <Select
+                showSearch
+                placeholder="请选择数据表"
+                style={{ width: '100%', maxWidth: 500 }}
+                loading={loadingTables}
+                value={selectedTable || undefined}
+                onChange={handleTableChange}
+                optionFilterProp="label"
+                options={tables.map((table) => ({
+                  value: table.tableName,
+                  label: table.tableComment
+                    ? `${table.tableName} (${table.tableComment})`
+                    : table.tableName,
+                }))}
+              />
+              {selectedTable && (
+                <Button
+                  danger
+                  icon={<DeleteOutlined />}
+                  onClick={() => {
+                    setDeleteModalVisible(true);
+                    setDeleteResult(null);
+                  }}
+                >
+                  删除全部代码
+                </Button>
+              )}
+            </Space>
           </TabPane>
           
           {/* 创建新表 Tab */}
@@ -1141,6 +1196,88 @@ export default function CodeGenerator() {
             <InputNumber min={0} style={{ width: '100%' }} />
           </Form.Item>
         </Form>
+      </Modal>
+
+      {/* 删除代码确认弹窗 */}
+      <Modal
+        title={
+          <Space>
+            <ExclamationCircleOutlined style={{ color: '#ff4d4f' }} />
+            <span style={{ color: '#ff4d4f' }}>危险操作确认</span>
+          </Space>
+        }
+        open={deleteModalVisible}
+        onCancel={() => setDeleteModalVisible(false)}
+        footer={[
+          <Button key="cancel" onClick={() => setDeleteModalVisible(false)}>
+            取消
+          </Button>,
+          <Button
+            key="delete"
+            danger
+            type="primary"
+            icon={<DeleteOutlined />}
+            loading={deleting}
+            onClick={handleDeleteCode}
+          >
+            确认删除
+          </Button>,
+        ]}
+        width={600}
+      >
+        <Space direction="vertical" style={{ width: '100%' }} size="large">
+          <Alert
+            message="⚠️ 此操作将永久删除以下代码文件及相关菜单，不可恢复！"
+            description={
+              <div>
+                <p><strong>表名：</strong>{step1ActiveTab === 'existing' ? selectedTable : newTableName}</p>
+                <p>将被删除的文件包括：</p>
+                <ul style={{ marginLeft: 20, color: '#ff4d4f' }}>
+                  <li>后端 Entity 实体文件</li>
+                  <li>后端 DTO 文件（Create/Update/Query）</li>
+                  <li>后端 Service 服务文件</li>
+                  <li>后端 Controller 控制器文件</li>
+                  <li>后端 Module 模块文件</li>
+                  <li>前端页面文件（index.tsx）</li>
+                  <li>前端服务文件（service.ts）</li>
+                </ul>
+                <p>同时会自动移除以下内容：</p>
+                <ul style={{ marginLeft: 20 }}>
+                  <li>frontend/src/App.tsx（路由）</li>
+                  <li>backend/src/app.module.ts（模块导入）</li>
+                  <li>数据库中的菜单及按钮权限（如果存在）</li>
+                </ul>
+              </div>
+            }
+            type="error"
+            showIcon
+          />
+
+          {deleteResult && (
+            <Alert
+              message={deleteResult.message}
+              type={deleteResult.success ? 'success' : 'warning'}
+              showIcon
+            />
+          )}
+
+          {deleteResult?.files && deleteResult.files.length > 0 && (
+            <div>
+              <Text strong>已删除的文件列表：</Text>
+              <List
+                size="small"
+                bordered
+                dataSource={deleteResult.files}
+                renderItem={(item) => (
+                  <List.Item>
+                    <Text code style={{ fontSize: 12 }}>{item}</Text>
+                  </List.Item>
+                )}
+                style={{ marginTop: 8, maxHeight: 200, overflow: 'auto' }}
+              />
+            </div>
+          )}
+        </Space>
       </Modal>
     </div>
   );

@@ -23,7 +23,6 @@ import { CodeGeneratorModule } from './modules/code-generator/code-generator.mod
 import { JwtAuthGuard } from './modules/auth/guards/jwt-auth.guard';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 import { ResponseInterceptor } from './common/interceptors/response.interceptor';
-import { SysTestModule } from './modules/test/test.module';
 
 @Module({
   imports: [
@@ -64,9 +63,8 @@ import { SysTestModule } from './modules/test/test.module';
     NotificationModule,
     ProfileModule,
     AiModule,
-    MemberModule,    SysTestModule,
-    CodeGeneratorModule,    SysTestModule,
-    SysTestModule,
+    MemberModule,
+    CodeGeneratorModule,
   ],
   controllers: [AppController],
   providers: [

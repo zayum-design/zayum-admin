@@ -92,6 +92,20 @@ export interface CheckTableResponse {
   };
 }
 
+export interface DeleteCodeParams {
+  tableName: string;
+}
+
+export interface DeleteCodeResponse {
+  code: number;
+  message: string;
+  data: {
+    files: string[];
+    success: boolean;
+    message: string;
+  };
+}
+
 export const codeGeneratorService = {
   // 获取所有表
   getTables: async (keyword?: string) => {
@@ -144,6 +158,14 @@ export const codeGeneratorService = {
   createTable: async (params: CreateTableParams) => {
     return request.post<CreateTableParams, CreateTableResponse>(
       '/api/admin/code-generator/create-table',
+      params
+    );
+  },
+
+  // 删除代码
+  deleteCode: async (params: DeleteCodeParams) => {
+    return request.post<DeleteCodeParams, DeleteCodeResponse>(
+      '/api/admin/code-generator/delete-code',
       params
     );
   },
