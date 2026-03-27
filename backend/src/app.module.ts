@@ -21,6 +21,7 @@ import { AiModule } from './modules/ai/ai.module';
 import { JwtAuthGuard } from './modules/auth/guards/jwt-auth.guard';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 import { ResponseInterceptor } from './common/interceptors/response.interceptor';
+import { UserScoreModule } from './modules/user-score/user-score.module';
 
 @Module({
   imports: [
@@ -29,7 +30,8 @@ import { ResponseInterceptor } from './common/interceptors/response.interceptor'
       envFilePath: '.env',
     }),
     TypeOrmModule.forRootAsync({
-      imports: [NestConfigModule],
+      imports: [NestConfigModule,
+    UserScoreModule,],
       useFactory: (configService: ConfigService) => ({
         type: 'postgres',
         host: configService.get('DB_HOST') || 'localhost',

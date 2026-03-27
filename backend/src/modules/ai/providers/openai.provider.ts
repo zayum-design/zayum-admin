@@ -97,7 +97,7 @@ export class OpenaiProvider extends BaseAiProvider {
         model,
         messages: request.messages,
         temperature: request.temperature ?? 0.7,
-        max_tokens: request.maxTokens,
+        max_tokens: request.maxTokens ? Math.min(request.maxTokens, 16384) : undefined,
         top_p: request.topP ?? 1,
         stream: false,
       });
@@ -139,7 +139,7 @@ export class OpenaiProvider extends BaseAiProvider {
           model,
           messages: request.messages,
           temperature: request.temperature ?? 0.7,
-          max_tokens: request.maxTokens,
+          max_tokens: request.maxTokens ? Math.min(request.maxTokens, 16384) : undefined,
           top_p: request.topP ?? 1,
           stream: true,
         });
@@ -181,7 +181,7 @@ export class OpenaiProvider extends BaseAiProvider {
         model,
         prompt: request.prompt,
         temperature: request.temperature ?? 0.7,
-        max_tokens: request.maxTokens,
+        max_tokens: request.maxTokens ? Math.min(request.maxTokens, 16384) : undefined,
       });
 
       const choice = response.choices[0];

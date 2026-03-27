@@ -18,6 +18,7 @@ import ConfigManagement from './pages/system/config';
 import FileManagement from './pages/system/file';
 import NotificationList from './pages/message/list';
 import ProfilePage from './pages/profile';
+import UserScorePage from './pages/user-score';
 
 function App() {
   return (
@@ -49,6 +50,7 @@ function App() {
               <Route path="system/file" element={<FileManagement />} />
               <Route path="user/list" element={<UserManagement />} />
               <Route path="user/group" element={<UserGroupManagement />} />
+              <Route path="user/score" element={<UserScorePage />} />
               <Route path="log" element={<Navigate to="/admin/log/operation" replace />} />
               <Route path="log/operation" element={<OperationLog />} />
               <Route path="log/login" element={<LoginLog />} />

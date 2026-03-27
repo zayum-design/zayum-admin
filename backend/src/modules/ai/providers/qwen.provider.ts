@@ -96,7 +96,7 @@ export class QwenProvider extends BaseAiProvider {
         model,
         messages: request.messages,
         temperature: request.temperature ?? 0.7,
-        max_tokens: request.maxTokens,
+        max_tokens: request.maxTokens ? Math.min(request.maxTokens, 8192) : 8192,
         top_p: request.topP ?? 0.95,
         stream: false,
       });
@@ -138,7 +138,7 @@ export class QwenProvider extends BaseAiProvider {
           model,
           messages: request.messages,
           temperature: request.temperature ?? 0.7,
-          max_tokens: request.maxTokens,
+          max_tokens: request.maxTokens ? Math.min(request.maxTokens, 8192) : 8192,
           top_p: request.topP ?? 0.95,
           stream: true,
         });

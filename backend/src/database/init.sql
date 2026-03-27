@@ -203,3 +203,25 @@ CREATE INDEX "idx_sys_notification_user_type" ON "sys_notification" ("user_type"
 CREATE INDEX "idx_sys_notification_user_id" ON "sys_notification" ("user_id");
 CREATE INDEX "idx_sys_notification_is_read" ON "sys_notification" ("is_read");
 CREATE INDEX "idx_sys_notification_created_at" ON "sys_notification" ("created_at");
+
+-- 用户积分表
+CREATE TABLE "sys_user_score" (
+    "id" BIGSERIAL NOT NULL,
+    "user_id" INT NOT NULL,
+    "admin_id" INT,
+    "scene" VARCHAR(50) NOT NULL,
+    "change_score" DECIMAL(10,2) NOT NULL,
+    "before_score" DECIMAL(10,2) NOT NULL,
+    "after_score" DECIMAL(10,2) NOT NULL,
+    "remark" VARCHAR(500),
+    "order_no" VARCHAR(100),
+    "ip" VARCHAR(50),
+    "created_at" TIMESTAMP NOT NULL DEFAULT NOW(),
+    "updated_at" TIMESTAMP NOT NULL DEFAULT NOW(),
+    CONSTRAINT "PK_sys_user_score" PRIMARY KEY ("id")
+);
+CREATE INDEX "idx_sys_user_score_user_id" ON "sys_user_score" ("user_id");
+CREATE INDEX "idx_sys_user_score_scene" ON "sys_user_score" ("scene");
+CREATE INDEX "idx_sys_user_score_created_at" ON "sys_user_score" ("created_at");
+CREATE INDEX "idx_sys_user_score_order_no" ON "sys_user_score" ("order_no");
+

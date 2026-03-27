@@ -75,6 +75,7 @@ export class AiService {
         provider: options.provider,
         model: options.model,
         temperature: options.temperature ?? 0.7,
+        maxTokens: 8192,  // 增加输出长度限制，避免代码截断
         stream: false,
       });
 
@@ -115,6 +116,7 @@ export class AiService {
           provider: options.provider,
           model: options.model,
           temperature: options.temperature ?? 0.7,
+          maxTokens: 8192,  // 增加输出长度限制，避免代码截断
         },
         { responseType: 'stream' }
       );

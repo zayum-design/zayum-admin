@@ -10,6 +10,7 @@ export interface ProjectStructure {
     framework: string;
     entitiesPath: string;
     modulesPath: string;
+    databasePath: string;
     existingEntities: string[];
     existingModules: string[];
   };
@@ -86,6 +87,7 @@ export class ProjectAnalyzer {
   private async analyzeNestJS(backendPath: string) {
     const entitiesPath = path.join(backendPath, 'src/entities');
     const modulesPath = path.join(backendPath, 'src/modules');
+    const databasePath = path.join(backendPath, 'src/database');
 
     const existingEntities: string[] = [];
     const existingModules: string[] = [];
@@ -107,6 +109,7 @@ export class ProjectAnalyzer {
       framework: 'nestjs',
       entitiesPath,
       modulesPath,
+      databasePath,
       existingEntities,
       existingModules,
     };
@@ -173,32 +176,79 @@ export class ProjectAnalyzer {
   generateStructureDescription(structure: ProjectStructure): string {
     const lines: string[] = [];
     
-    lines.push(`# 项目结构分析`);
     lines.push(`项目根目录: ${structure.rootPath}`);
     lines.push(`项目类型: ${structure.type}`);
     lines.push('');
 
     if (structure.backend) {
       lines.push(`## 后端 (${structure.backend.framework})`);
-      lines.push(`- 路径: ${structure.backend.path}`);
-      lines.push(`- 实体目录: ${structure.backend.entitiesPath}`);
-      lines.push(`- 模块目录: ${structure.backend.modulesPath}`);
+      lines.push('');
+      lines.push(`### 目录结构`);
+      lines.push(`\`\`\``);
+      lines.push(`${structure.backend.path}/src/`);
+      lines.push(`├── database/                   # 数据库迁移脚本`);
+      lines.push(`│   └── add_{name}_table.sql    # 数据库表创建脚本`);
+      lines.push(`├── entities/                    # 数据库实体`);
+      lines.push(`│   └── sys-{name}.entity.ts    # 实体文件`);
+      lines.push(`├── modules/                     # 功能模块`);
+      lines.push(`│   └── {module-name}/           # 模块目录`);
+      lines.push(`│       ├── dto/                 # DTO目录`);
+      lines.push(`│       │   ├── create-{name}.dto.ts`);
+      lines.push(`│       │   ├── update-{name}.dto.ts`);
+      lines.push(`│       │   └── query-{name}.dto.ts`);
+      lines.push(`│       ├── {name}.controller.ts # 控制器`);
+      lines.push(`│       ├── {name}.service.ts    # 服务`);
+      lines.push(`│       └── {name}.module.ts     # 模块定义`);
+      lines.push(`└── app.module.ts               # 根模块`);
+      lines.push(`\`\`\``);
+      lines.push('');
+      lines.push(`### 文件生成位置`);
+      lines.push(`- 数据库迁移: \`${structure.backend.databasePath}/add_{name}_table.sql\``);
+      lines.push(`- Entity: \`${structure.backend.entitiesPath}/sys-{name}.entity.ts\``);
+      lines.push(`- DTOs: \`${structure.backend.modulesPath}/{name}/dto/\``);
+      lines.push(`- Controller: \`${structure.backend.modulesPath}/{name}/{name}.controller.ts\``);
+      lines.push(`- Service: \`${structure.backend.modulesPath}/{name}/{name}.service.ts\``);
+      lines.push(`- Module: \`${structure.backend.modulesPath}/{name}/{name}.module.ts\``);
+      lines.push(`- Root Module: \`${structure.backend.path}/src/app.module.ts\``);
+      lines.push('');
       
       if (structure.backend.existingEntities.length > 0) {
-        lines.push(`- 已有实体: ${structure.backend.existingEntities.join(', ')}`);
+        lines.push(`### 已有实体`);
+        structure.backend.existingEntities.forEach(e => {
+          lines.push(`- ${e}.entity.ts`);
+        });
+        lines.push('');
       }
       if (structure.backend.existingModules.length > 0) {
-        lines.push(`- 已有模块: ${structure.backend.existingModules.join(', ')}`);
+        lines.push(`### 已有模块`);
+        structure.backend.existingModules.forEach(m => {
+          lines.push(`- ${m}/`);
+        });
+        lines.push('');
       }
-      lines.push('');
     }
 
     if (structure.frontend) {
       lines.push(`## 前端 (${structure.frontend.framework})`);
-      lines.push(`- 路径: ${structure.frontend.path}`);
-      lines.push(`- 组件目录: ${structure.frontend.componentsPath}`);
-      lines.push(`- 页面目录: ${structure.frontend.pagesPath}`);
-      lines.push(`- API 目录: ${structure.frontend.apiPath}`);
+      lines.push('');
+      lines.push(`### 目录结构`);
+      lines.push(`\`\`\``);
+      lines.push(`${structure.frontend.path}/src/`);
+      lines.push(`├── pages/                       # 页面组件`);
+      lines.push(`│   └── {module-name}/           # 模块页面目录`);
+      lines.push(`│       ├── index.tsx           # 列表页`);
+      lines.push(`│       ├── create.tsx          # 创建页`);
+      lines.push(`│       ├── edit.tsx            # 编辑页`);
+      lines.push(`│       └── detail.tsx          # 详情页`);
+      lines.push(`├── services/                    # API服务`);
+      lines.push(`│   └── {name}.service.ts       # 模块API`);
+      lines.push(`├── components/                  # 公共组件`);
+      lines.push(`└── types/                       # 类型定义`);
+      lines.push(`\`\`\``);
+      lines.push('');
+      lines.push(`### 文件生成位置`);
+      lines.push(`- API Service: \`${structure.frontend.apiPath}/{name}.service.ts\``);
+      lines.push(`- Pages: \`${structure.frontend.pagesPath}/{name}/\``);
       lines.push('');
     }
 

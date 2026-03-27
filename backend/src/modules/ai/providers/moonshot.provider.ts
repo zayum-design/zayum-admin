@@ -92,7 +92,7 @@ export class MoonshotProvider extends BaseAiProvider {
         model,
         messages: request.messages,
         temperature: request.temperature ?? 0.3,
-        max_tokens: request.maxTokens,
+        max_tokens: request.maxTokens ? Math.min(request.maxTokens, 8192) : 8192,
         top_p: request.topP ?? 1,
         stream: false,
       });
@@ -134,7 +134,7 @@ export class MoonshotProvider extends BaseAiProvider {
           model,
           messages: request.messages,
           temperature: request.temperature ?? 0.3,
-          max_tokens: request.maxTokens,
+          max_tokens: request.maxTokens ? Math.min(request.maxTokens, 8192) : 8192,
           top_p: request.topP ?? 1,
           stream: true,
         });
