@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, Like, In, FindOptionsWhere } from 'typeorm';
+import { Repository, Like, In, FindOptionsWhere, MoreThanOrEqual, LessThanOrEqual, Between } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { SysUser } from '../../entities/sys-user.entity';
 import { SysUserGroup } from '../../entities/sys-user-group.entity';
@@ -8,6 +8,8 @@ import { SysOperationLog } from '../../entities/sys-operation-log.entity';
 import { QueryUserDto } from './dto/query-user.dto';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { UserScoreService } from '../user-score/user-score.service';
+import { UserBalanceService } from '../user-balance/user-balance.service';
 
 @Injectable()
 export class UserService {
@@ -18,6 +20,8 @@ export class UserService {
     private userGroupRepository: Repository<SysUserGroup>,
     @InjectRepository(SysOperationLog)
     private operationLogRepository: Repository<SysOperationLog>,
+    private userScoreService: UserScoreService,
+    private userBalanceService: UserBalanceService,
   ) {}
 
   async findAll(query: QueryUserDto) {
@@ -33,6 +37,10 @@ export class UserService {
       status,
       created_at_start,
       created_at_end,
+      score_min,
+      score_max,
+      balance_min,
+      balance_max,
     } = query;
 
     const where: FindOptionsWhere<SysUser> = {};
@@ -44,7 +52,24 @@ export class UserService {
     if (group_id) where.groupId = group_id;
     if (gender) where.gender = gender;
     if (status) where.status = status;
-
+    
+    // 处理积分范围查询
+    if (score_min !== undefined && score_max !== undefined) {
+      where.score = Between(score_min, score_max);
+    } else if (score_min !== undefined) {
+      where.score = MoreThanOrEqual(score_min);
+    } else if (score_max !== undefined) {
+      where.score = LessThanOrEqual(score_max);
+    }
+    
+    // 处理余额范围查询
+    if (balance_min !== undefined && balance_max !== undefined) {
+      where.balance = Between(balance_min, balance_max);
+    } else if (balance_min !== undefined) {
+      where.balance = MoreThanOrEqual(balance_min);
+    } else if (balance_max !== undefined) {
+      where.balance = LessThanOrEqual(balance_max);
+    }
 
     const [list, total] = await this.userRepository.findAndCount({
       where,
@@ -139,6 +164,8 @@ export class UserService {
       gender: createUserDto.gender || 'unknown',
       birthday: createUserDto.birthday,
       status: createUserDto.status || 'normal',
+      score: createUserDto.score || 0,
+      balance: createUserDto.balance || 0,
     });
 
     const savedUser = await this.userRepository.save(user);
@@ -340,5 +367,195 @@ export class UserService {
       return this.generateRandomPassword();
     }
     return password;
+  }
+
+  async updateScore(id: number, score: number, operatorId: number, remark?: string) {
+    if (typeof score !== 'number' || score < 0) {
+      throw new BadRequestException('积分必须是非负数');
+    }
+
+    const user = await this.userRepository.findOne({ where: { id } });
+    if (!user) {
+      throw new NotFoundException('用户不存在');
+    }
+
+    const oldScore = user.score;
+    const changeScore = score - oldScore;
+    user.score = score;
+    const updatedUser = await this.userRepository.save(user);
+
+    // 记录积分变动日志
+    try {
+      await this.userScoreService.addLog({
+        user_id: id,
+        admin_id: operatorId,
+        scene: 'admin_update',
+        change_score: Number(changeScore.toFixed(2)),
+        before_score: Number(oldScore.toFixed(2)),
+        after_score: Number(score.toFixed(2)),
+        remark: remark || `管理员修改用户积分: ${oldScore} -> ${score}`,
+      });
+    } catch (error) {
+      console.error('记录积分日志失败:', error);
+    }
+
+    // 记录操作日志
+    await this.operationLogRepository.save({
+      userType: 'admin',
+      userId: operatorId,
+      username: 'system',
+      module: 'user',
+      action: 'update_score',
+      method: 'PATCH',
+      url: `/api/users/${id}/score`,
+      params: JSON.stringify({ id, oldScore, newScore: score }),
+      status: 'success',
+    });
+
+    const { password, ...rest } = updatedUser;
+    return rest;
+  }
+
+  async updateBalance(id: number, balance: number, operatorId: number, remark?: string) {
+    if (typeof balance !== 'number' || balance < 0) {
+      throw new BadRequestException('余额必须是非负数');
+    }
+
+    const user = await this.userRepository.findOne({ where: { id } });
+    if (!user) {
+      throw new NotFoundException('用户不存在');
+    }
+
+    const oldBalance = Number(user.balance);
+    const changeBalance = balance - oldBalance;
+    user.balance = balance;
+    const updatedUser = await this.userRepository.save(user);
+
+    // 记录余额变动日志
+    try {
+      await this.userBalanceService.addLog({
+        user_id: id,
+        admin_id: operatorId,
+        scene: 'admin_update',
+        change_balance: Number(changeBalance.toFixed(2)),
+        before_balance: Number(oldBalance.toFixed(2)),
+        after_balance: Number(balance.toFixed(2)),
+        remark: remark || `管理员修改用户余额: ${oldBalance} -> ${balance}`,
+      });
+    } catch (error) {
+      console.error('记录余额日志失败:', error);
+    }
+
+    // 记录操作日志
+    await this.operationLogRepository.save({
+      userType: 'admin',
+      userId: operatorId,
+      username: 'system',
+      module: 'user',
+      action: 'update_balance',
+      method: 'PATCH',
+      url: `/api/users/${id}/balance`,
+      params: JSON.stringify({ id, oldBalance, newBalance: balance }),
+      status: 'success',
+    });
+
+    const { password, ...rest } = updatedUser;
+    return rest;
+  }
+
+  async adjustScore(id: number, delta: number, operatorId: number, remark?: string) {
+    const user = await this.userRepository.findOne({ where: { id } });
+    if (!user) {
+      throw new NotFoundException('用户不存在');
+    }
+
+    const oldScore = user.score;
+    const newScore = oldScore + delta;
+    
+    if (newScore < 0) {
+      throw new BadRequestException('调整后积分不能为负数');
+    }
+
+    user.score = newScore;
+    const updatedUser = await this.userRepository.save(user);
+
+    // 记录积分变动日志
+    try {
+      await this.userScoreService.addLog({
+        user_id: id,
+        admin_id: operatorId,
+        scene: delta >= 0 ? 'admin_add' : 'admin_deduct',
+        change_score: Number(delta.toFixed(2)),
+        before_score: Number(oldScore.toFixed(2)),
+        after_score: Number(newScore.toFixed(2)),
+        remark: remark || `管理员${delta >= 0 ? '增加' : '扣除'}用户积分: ${delta > 0 ? '+' : ''}${delta}`,
+      });
+    } catch (error) {
+      console.error('记录积分日志失败:', error);
+    }
+
+    // 记录操作日志
+    await this.operationLogRepository.save({
+      userType: 'admin',
+      userId: operatorId,
+      username: 'system',
+      module: 'user',
+      action: 'adjust_score',
+      method: 'PATCH',
+      url: `/api/users/${id}/adjust-score`,
+      params: JSON.stringify({ id, delta, oldScore, newScore }),
+      status: 'success',
+    });
+
+    const { password, ...rest } = updatedUser;
+    return { ...rest, oldScore, newScore, delta };
+  }
+
+  async adjustBalance(id: number, delta: number, operatorId: number, remark?: string) {
+    const user = await this.userRepository.findOne({ where: { id } });
+    if (!user) {
+      throw new NotFoundException('用户不存在');
+    }
+
+    const oldBalance = Number(user.balance);
+    const newBalance = oldBalance + delta;
+    
+    if (newBalance < 0) {
+      throw new BadRequestException('调整后余额不能为负数');
+    }
+
+    user.balance = newBalance;
+    const updatedUser = await this.userRepository.save(user);
+
+    // 记录余额变动日志
+    try {
+      await this.userBalanceService.addLog({
+        user_id: id,
+        admin_id: operatorId,
+        scene: delta >= 0 ? 'admin_recharge' : 'admin_deduct',
+        change_balance: Number(delta.toFixed(2)),
+        before_balance: Number(oldBalance.toFixed(2)),
+        after_balance: Number(newBalance.toFixed(2)),
+        remark: remark || `管理员${delta >= 0 ? '充值' : '扣除'}用户余额: ${delta > 0 ? '+' : ''}${delta}`,
+      });
+    } catch (error) {
+      console.error('记录余额日志失败:', error);
+    }
+
+    // 记录操作日志
+    await this.operationLogRepository.save({
+      userType: 'admin',
+      userId: operatorId,
+      username: 'system',
+      module: 'user',
+      action: 'adjust_balance',
+      method: 'PATCH',
+      url: `/api/users/${id}/adjust-balance`,
+      params: JSON.stringify({ id, delta, oldBalance, newBalance }),
+      status: 'success',
+    });
+
+    const { password, ...rest } = updatedUser;
+    return { ...rest, oldBalance, newBalance, delta };
   }
 }

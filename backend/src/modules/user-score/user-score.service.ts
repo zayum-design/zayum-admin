@@ -6,12 +6,34 @@ import { CreateUserScoreDto } from './dto/create-user-score.dto';
 import { UpdateUserScoreDto } from './dto/update-user-score.dto';
 import { QueryUserScoreDto } from './dto/query-user-score.dto';
 
+export interface AddScoreLogParams {
+  user_id: number;
+  admin_id?: number;
+  scene: string;
+  change_score: number;
+  before_score: number;
+  after_score: number;
+  remark?: string;
+  order_no?: string;
+  ip?: string;
+}
+
 @Injectable()
 export class UserScoreService {
   constructor(
     @InjectRepository(SysUserScoreEntity)
     private readonly userScoreRepository: Repository<SysUserScoreEntity>,
   ) {}
+
+  /**
+   * 添加积分日志（供其他地方调用）
+   * @param params 积分日志参数
+   * @returns 创建的日志记录
+   */
+  async addLog(params: AddScoreLogParams): Promise<SysUserScoreEntity> {
+    const entity = this.userScoreRepository.create(params);
+    return await this.userScoreRepository.save(entity);
+  }
 
   async create(createDto: CreateUserScoreDto) {
     const entity = this.userScoreRepository.create(createDto);

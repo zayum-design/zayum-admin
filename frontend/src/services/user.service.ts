@@ -12,6 +12,10 @@ export interface QueryUserDTO {
   status?: string;
   created_at_start?: string;
   created_at_end?: string;
+  score_min?: number;
+  score_max?: number;
+  balance_min?: number;
+  balance_max?: number;
 }
 
 export interface CreateUserDTO {
@@ -25,6 +29,8 @@ export interface CreateUserDTO {
   gender?: string;
   birthday?: string;
   status?: string;
+  score?: number;
+  balance?: number;
 }
 
 export interface UpdateUserDTO {
@@ -37,6 +43,8 @@ export interface UpdateUserDTO {
   gender?: string;
   birthday?: string;
   status?: string;
+  score?: number;
+  balance?: number;
 }
 
 export interface UserItem {
@@ -51,6 +59,8 @@ export interface UserItem {
   group_id: number;
   group_name: string;
   status: string;
+  score: number;
+  balance: number;
   createdAt: string;
   updatedAt: string;
 }
@@ -118,5 +128,25 @@ export const userService = {
     return request.post<{ new_password?: string }, any>(`/api/admin/users/${id}/reset-password`, {
       new_password: newPassword,
     });
+  },
+
+  // 更新用户积分
+  updateScore: async (id: number, score: number) => {
+    return request.patch<{ score: number }, any>(`/api/admin/users/${id}/score`, { score });
+  },
+
+  // 更新用户余额
+  updateBalance: async (id: number, balance: number) => {
+    return request.patch<{ balance: number }, any>(`/api/admin/users/${id}/balance`, { balance });
+  },
+
+  // 调整用户积分（增减）
+  adjustScore: async (id: number, delta: number) => {
+    return request.patch<{ delta: number; oldScore: number; newScore: number }, any>(`/api/admin/users/${id}/adjust-score`, { delta });
+  },
+
+  // 调整用户余额（增减）
+  adjustBalance: async (id: number, delta: number) => {
+    return request.patch<{ delta: number; oldBalance: number; newBalance: number }, any>(`/api/admin/users/${id}/adjust-balance`, { delta });
   },
 };

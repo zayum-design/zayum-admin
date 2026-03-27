@@ -1,17 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { Table, Button, Space, Form, Input, Select, DatePicker, Card, Modal, message } from 'antd';
 import { SearchOutlined, DeleteOutlined } from '@ant-design/icons';
-import { UserScoreService } from '../../services/user-score.service';
-import type { UserScoreItem, QueryUserScoreDto } from '../../services/user-score.service';
+import { UserBalanceService } from '../../services/user-balance.service';
+import type { UserBalanceItem, QueryUserBalanceDto } from '../../services/user-balance.service';
 import dayjs from 'dayjs';
 
 const { RangePicker } = DatePicker;
 const { Option } = Select;
 
-const UserScorePage: React.FC = () => {
+const UserBalancePage: React.FC = () => {
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
-  const [data, setData] = useState<UserScoreItem[]>([]);
+  const [data, setData] = useState<UserBalanceItem[]>([]);
   const [pagination, setPagination] = useState({
     current: 1,
     pageSize: 20,
@@ -19,10 +19,10 @@ const UserScorePage: React.FC = () => {
   });
   const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
 
-  const fetchData = async (params: QueryUserScoreDto = {}) => {
+  const fetchData = async (params: QueryUserBalanceDto = {}) => {
     setLoading(true);
     try {
-      const result = await UserScoreService.findAll({
+      const result = await UserBalanceService.findAll({
         ...params,
         page: pagination.current,
         page_size: pagination.pageSize,
@@ -44,7 +44,7 @@ const UserScorePage: React.FC = () => {
   }, [pagination.current, pagination.pageSize]);
 
   const handleSearch = (values: any) => {
-    const params: QueryUserScoreDto = {};
+    const params: QueryUserBalanceDto = {};
     if (values.user_id) params.user_id = values.user_id;
     if (values.admin_id) params.admin_id = values.admin_id;
     if (values.scene) params.scene = values.scene;
@@ -67,7 +67,7 @@ const UserScorePage: React.FC = () => {
       content: '确定要删除这条记录吗？',
       onOk: async () => {
         try {
-          await UserScoreService.remove(id);
+          await UserBalanceService.remove(id);
           message.success('删除成功');
           fetchData();
         } catch (error) {
@@ -87,7 +87,7 @@ const UserScorePage: React.FC = () => {
       content: `确定要删除选中的 ${selectedRowKeys.length} 条记录吗？`,
       onOk: async () => {
         try {
-          await Promise.all(selectedRowKeys.map(id => UserScoreService.remove(id as number)));
+          await Promise.all(selectedRowKeys.map(id => UserBalanceService.remove(id as number)));
           message.success('批量删除成功');
           setSelectedRowKeys([]);
           fetchData();
@@ -104,8 +104,8 @@ const UserScorePage: React.FC = () => {
     { title: '管理员ID', dataIndex: 'admin_id', width: 100 },
     { title: '场景', dataIndex: 'scene', width: 120 },
     { 
-      title: '变更积分', 
-      dataIndex: 'change_score', 
+      title: '变更余额', 
+      dataIndex: 'change_balance', 
       width: 120,
       render: (value: number) => (
         <span style={{ color: value >= 0 ? '#52c41a' : '#ff4d4f' }}>
@@ -113,8 +113,8 @@ const UserScorePage: React.FC = () => {
         </span>
       )
     },
-    { title: '变更前', dataIndex: 'before_score', width: 120 },
-    { title: '变更后', dataIndex: 'after_score', width: 120 },
+    { title: '变更前', dataIndex: 'before_balance', width: 120 },
+    { title: '变更后', dataIndex: 'after_balance', width: 120 },
     { title: '订单号', dataIndex: 'order_no', width: 150 },
     { title: '备注', dataIndex: 'remark', ellipsis: true },
     { 
@@ -126,7 +126,7 @@ const UserScorePage: React.FC = () => {
     {
       title: '操作',
       width: 120,
-      render: (_: any, record: UserScoreItem) => (
+      render: (_: any, record: UserBalanceItem) => (
         <Space size="small">
           <Button type="link" danger icon={<DeleteOutlined />} onClick={() => handleDelete(record.id)}>
             删除
@@ -152,10 +152,10 @@ const UserScorePage: React.FC = () => {
         </Form.Item>
         <Form.Item name="scene" label="场景">
           <Select placeholder="请选择场景" style={{ width: 140 }} allowClear>
-            <Option value="sign_in">签到</Option>
-            <Option value="purchase">购物</Option>
+            <Option value="recharge">充值</Option>
+            <Option value="consume">消费</Option>
             <Option value="refund">退款</Option>
-            <Option value="admin_add">管理员增加</Option>
+            <Option value="admin_recharge">管理员充值</Option>
             <Option value="admin_deduct">管理员扣除</Option>
             <Option value="admin_update">管理员修改</Option>
           </Select>
@@ -199,4 +199,4 @@ const UserScorePage: React.FC = () => {
   );
 };
 
-export default UserScorePage;
+export default UserBalancePage;

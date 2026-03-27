@@ -95,6 +95,8 @@ async function seed() {
     // 用户管理子菜单
     { name: '用户列表', code: 'user:list', type: 'menu', path: '/admin/user/list', icon: 'UserOutlined', parentId: 0, sort: 0 },
     { name: '用户组', code: 'user:group', type: 'menu', path: '/admin/user/group', icon: 'TeamOutlined', parentId: 0, sort: 1 },
+    { name: '积分日志', code: 'user:score', type: 'menu', path: '/admin/user/score', icon: 'FileTextOutlined', parentId: 0, sort: 2 },
+    { name: '余额日志', code: 'user:balance', type: 'menu', path: '/admin/user/balance', icon: 'FileTextOutlined', parentId: 0, sort: 3 },
     // 系统管理子菜单
     { name: '管理员管理', code: 'system:admin', type: 'menu', path: '/admin/system/admin', icon: 'UserOutlined', parentId: 0, sort: 0 },
     { name: '管理员组管理', code: 'system:admin-group', type: 'menu', path: '/admin/system/admin/group', icon: 'TeamOutlined', parentId: 0, sort: 1 },
@@ -174,6 +176,14 @@ async function seed() {
 
     // 登录日志按钮权限
     { name: '查看日志', code: 'log:login:view', type: 'button', parentCode: 'log:login', sort: 0 },
+
+    // 积分日志按钮权限
+    { name: '查看积分日志', code: 'user:score:view', type: 'button', parentCode: 'user:score', sort: 0 },
+    { name: '删除积分日志', code: 'user:score:delete', type: 'button', parentCode: 'user:score', sort: 1 },
+
+    // 余额日志按钮权限
+    { name: '查看余额日志', code: 'user:balance:view', type: 'button', parentCode: 'user:balance', sort: 0 },
+    { name: '删除余额日志', code: 'user:balance:delete', type: 'button', parentCode: 'user:balance', sort: 1 },
   ];
 
   for (const buttonPerm of buttonPermissions) {

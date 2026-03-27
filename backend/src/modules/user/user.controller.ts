@@ -81,4 +81,40 @@ export class UserController {
   ) {
     return this.userService.resetPassword(id, newPassword, admin.id);
   }
+
+  @Patch(':id/score')
+  async updateScore(
+    @Param('id', ParseIntPipe) id: number,
+    @Body('score') score: number,
+    @CurrentUser() admin: SysAdmin,
+  ) {
+    return this.userService.updateScore(id, score, admin.id);
+  }
+
+  @Patch(':id/balance')
+  async updateBalance(
+    @Param('id', ParseIntPipe) id: number,
+    @Body('balance') balance: number,
+    @CurrentUser() admin: SysAdmin,
+  ) {
+    return this.userService.updateBalance(id, balance, admin.id);
+  }
+
+  @Patch(':id/adjust-score')
+  async adjustScore(
+    @Param('id', ParseIntPipe) id: number,
+    @Body('delta') delta: number,
+    @CurrentUser() admin: SysAdmin,
+  ) {
+    return this.userService.adjustScore(id, delta, admin.id);
+  }
+
+  @Patch(':id/adjust-balance')
+  async adjustBalance(
+    @Param('id', ParseIntPipe) id: number,
+    @Body('delta') delta: number,
+    @CurrentUser() admin: SysAdmin,
+  ) {
+    return this.userService.adjustBalance(id, delta, admin.id);
+  }
 }

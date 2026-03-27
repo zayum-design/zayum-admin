@@ -51,4 +51,12 @@ export class CreateUserDto {
   @IsString()
   @IsIn(['normal', 'hidden', 'locked'])
   status?: string = 'normal';
+
+  @IsOptional()
+  @IsNumber()
+  score?: number = 0;
+
+  @IsOptional()
+  @IsNumber()
+  balance?: number = 0;
 }

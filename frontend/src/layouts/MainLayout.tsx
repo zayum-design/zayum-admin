@@ -129,6 +129,8 @@ export default function MainLayout() {
       user: '用户管理',
       list: '用户列表',
       group: '用户组',
+      score: '积分日志',
+      balance: '余额日志',
       log: '日志管理',
       operation: '操作日志',
       login: '登录日志',

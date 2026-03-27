@@ -44,4 +44,12 @@ export class UpdateUserDto {
   @IsString()
   @IsIn(['normal', 'hidden', 'locked'])
   status?: string;
+
+  @IsOptional()
+  @IsNumber()
+  score?: number;
+
+  @IsOptional()
+  @IsNumber()
+  balance?: number;
 }

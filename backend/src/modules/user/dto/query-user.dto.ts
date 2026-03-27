@@ -50,4 +50,24 @@ export class QueryUserDto {
   @IsOptional()
   @IsString()
   created_at_end?: string;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
+  score_min?: number;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
+  score_max?: number;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
+  balance_min?: number;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
+  balance_max?: number;
 }

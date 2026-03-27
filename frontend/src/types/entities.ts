@@ -42,6 +42,8 @@ export interface SysUser {
   gender: string;
   birthday?: string;
   status: string;
+  score: number;
+  balance: number;
   createdAt: string;
   updatedAt: string;
   group?: SysUserGroup;

@@ -58,24 +58,34 @@ export interface PaginatedResponse {
   total_pages: number;
 }
 
+export interface ApiResponse<T> {
+  code: number;
+  message: string;
+  data: T;
+}
+
 export class UserScoreService {
   static async create(data: CreateUserScoreDto): Promise<UserScoreItem> {
-    return request.post('/api/admin/user-score', data);
+    const res = await request.post<CreateUserScoreDto, ApiResponse<UserScoreItem>>('/api/admin/user-score', data);
+    return res.data;
   }
 
   static async findAll(params?: QueryUserScoreDto): Promise<PaginatedResponse> {
-    return request.get('/api/admin/user-score', { params });
+    const res = await request.get<any, ApiResponse<PaginatedResponse>>('/api/admin/user-score', { params });
+    return res.data;
   }
 
   static async findOne(id: number): Promise<UserScoreItem> {
-    return request.get(`/api/admin/user-score/${id}`);
+    const res = await request.get<any, ApiResponse<UserScoreItem>>(`/api/admin/user-score/${id}`);
+    return res.data;
   }
 
   static async update(id: number, data: UpdateUserScoreDto): Promise<UserScoreItem> {
-    return request.patch(`/api/admin/user-score/${id}`, data);
+    const res = await request.patch<UpdateUserScoreDto, ApiResponse<UserScoreItem>>(`/api/admin/user-score/${id}`, data);
+    return res.data;
   }
 
   static async remove(id: number): Promise<void> {
-    return request.delete(`/api/admin/user-score/${id}`);
+    await request.delete<any, ApiResponse<void>>(`/api/admin/user-score/${id}`);
   }
 }

@@ -50,6 +50,12 @@ export class SysUser {
   @Column({ type: 'varchar', length: 20, default: 'normal' })
   status: string;
 
+  @Column({ type: 'int', default: 0, name: 'score' })
+  score: number;
+
+  @Column({ type: 'decimal', precision: 10, scale: 2, default: 0, name: 'balance' })
+  balance: number;
+
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
 
