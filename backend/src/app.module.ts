@@ -19,9 +19,11 @@ import { NotificationModule } from './modules/notification/notification.module';
 import { ProfileModule } from './modules/profile/profile.module';
 import { AiModule } from './modules/ai/ai.module';
 import { MemberModule } from './modules/member/member.module';
+import { CodeGeneratorModule } from './modules/code-generator/code-generator.module';
 import { JwtAuthGuard } from './modules/auth/guards/jwt-auth.guard';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 import { ResponseInterceptor } from './common/interceptors/response.interceptor';
+import { SysTestModule } from './modules/test/test.module';
 
 @Module({
   imports: [
@@ -62,7 +64,9 @@ import { ResponseInterceptor } from './common/interceptors/response.interceptor'
     NotificationModule,
     ProfileModule,
     AiModule,
-    MemberModule,
+    MemberModule,    SysTestModule,
+    CodeGeneratorModule,    SysTestModule,
+    SysTestModule,
   ],
   controllers: [AppController],
   providers: [

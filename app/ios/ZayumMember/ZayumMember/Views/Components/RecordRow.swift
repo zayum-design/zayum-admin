@@ -52,7 +52,7 @@ struct BalanceRecordRow: View {
         let color: Color
         
         switch record.type {
-        case .recharge:
+        case .recharge, .adminRecharge:
             iconName = "plus.circle.fill"
             color = .green
         case .consume:
@@ -61,9 +61,18 @@ struct BalanceRecordRow: View {
         case .refund:
             iconName = "arrow.uturn.backward.circle.fill"
             color = .blue
-        case .adjust:
+        case .adjust, .adminAdjust:
             iconName = "slider.horizontal.below.rectangle"
             color = .orange
+        case .adminAdd:
+            iconName = "person.badge.plus"
+            color = .green
+        case .adminDeduct:
+            iconName = "person.badge.minus"
+            color = .red
+        case .adminUpdate:
+            iconName = "person.crop.circle.badge.checkmark"
+            color = .blue
         }
         
         return Image(systemName: iconName)
@@ -149,7 +158,7 @@ struct ScoreRecordRow: View {
         let color: Color
         
         switch record.type {
-        case .recharge:
+        case .recharge, .adminRecharge:
             iconName = "plus.circle.fill"
             color = .green
         case .consume:
@@ -158,9 +167,18 @@ struct ScoreRecordRow: View {
         case .earn:
             iconName = "star.circle.fill"
             color = .orange
-        case .adjust:
+        case .adjust, .adminAdjust:
             iconName = "slider.horizontal.below.rectangle"
             color = .purple
+        case .adminAdd:
+            iconName = "person.badge.plus"
+            color = .green
+        case .adminDeduct:
+            iconName = "person.badge.minus"
+            color = .red
+        case .adminUpdate:
+            iconName = "person.crop.circle.badge.checkmark"
+            color = .blue
         }
         
         return Image(systemName: iconName)
@@ -172,9 +190,9 @@ struct ScoreRecordRow: View {
         record.type.isPositive ? .green : .red
     }
     
-    private func formattedScore(_ score: Int) -> String {
+    private func formattedScore(_ score: Double) -> String {
         let prefix = record.type.isPositive ? "+" : "-"
-        return "\(prefix)\(abs(score)) 积分"
+        return "\(prefix)\(Int(abs(score))) 积分"
     }
     
     private func formattedDate(_ dateString: String) -> String {
@@ -223,9 +241,9 @@ struct ScoreRecordRow: View {
     let sampleScoreRecord = ScoreRecord(
         id: 1,
         userId: 1,
-        score: 50,
-        beforeScore: 100,
-        afterScore: 150,
+        score: 50.0,
+        beforeScore: 100.0,
+        afterScore: 150.0,
         type: .earn,
         remark: "签到奖励",
         createdAt: "2024-03-27 10:30:00"

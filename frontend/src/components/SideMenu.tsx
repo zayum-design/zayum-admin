@@ -11,6 +11,7 @@ import {
   KeyOutlined,
   FileSearchOutlined,
   LoginOutlined,
+  CodeOutlined,
 } from '@ant-design/icons';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { usePermissionStore } from '../store/permission.store';
@@ -26,6 +27,7 @@ const iconMap: Record<string, React.ReactNode> = {
   KeyOutlined: <KeyOutlined />,
   FileSearchOutlined: <FileSearchOutlined />,
   LoginOutlined: <LoginOutlined />,
+  CodeOutlined: <CodeOutlined />,
 };
 
 interface Permission {

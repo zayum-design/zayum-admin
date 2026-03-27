@@ -103,6 +103,7 @@ async function seed() {
     { name: '权限管理', code: 'system:permission', type: 'menu', path: '/admin/system/permission', icon: 'KeyOutlined', parentId: 0, sort: 2 },
     { name: '系统配置', code: 'system:config', type: 'menu', path: '/admin/system/config', icon: 'SettingOutlined', parentId: 0, sort: 3 },
     { name: '文件管理', code: 'system:file', type: 'menu', path: '/admin/system/file', icon: 'UploadOutlined', parentId: 0, sort: 4 },
+    { name: '代码生成器', code: 'system:code-generator', type: 'menu', path: '/admin/code-generator', icon: 'CodeOutlined', parentId: 0, sort: 5 },
     // 日志管理子菜单
     { name: '操作日志', code: 'log:operation', type: 'menu', path: '/admin/log/operation', icon: 'FileSearchOutlined', parentId: 0, sort: 0 },
     { name: '登录日志', code: 'log:login', type: 'menu', path: '/admin/log/login', icon: 'LoginOutlined', parentId: 0, sort: 1 },

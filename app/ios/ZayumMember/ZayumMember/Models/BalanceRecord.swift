@@ -12,13 +12,13 @@ struct BalanceRecord: Codable, Identifiable, Equatable {
     
     enum CodingKeys: String, CodingKey {
         case id
-        case userId = "user_id"
+        case userId
         case amount
-        case beforeBalance = "before_balance"
-        case afterBalance = "after_balance"
+        case beforeBalance
+        case afterBalance
         case type
         case remark
-        case createdAt = "created_at"
+        case createdAt
     }
 }
 
@@ -27,6 +27,11 @@ enum BalanceRecordType: String, Codable, CaseIterable {
     case consume = "consume"
     case refund = "refund"
     case adjust = "adjust"
+    case adminAdd = "admin_add"
+    case adminDeduct = "admin_deduct"
+    case adminUpdate = "admin_update"
+    case adminRecharge = "admin_recharge"
+    case adminAdjust = "admin_adjust"
     
     var displayName: String {
         switch self {
@@ -34,14 +39,19 @@ enum BalanceRecordType: String, Codable, CaseIterable {
         case .consume: return "消费"
         case .refund: return "退款"
         case .adjust: return "调整"
+        case .adminAdd: return "管理员增加"
+        case .adminDeduct: return "管理员扣除"
+        case .adminUpdate: return "管理员更新"
+        case .adminRecharge: return "管理员充值"
+        case .adminAdjust: return "管理员调整"
         }
     }
     
     var isPositive: Bool {
         switch self {
-        case .recharge, .refund:
+        case .recharge, .refund, .adminAdd, .adminRecharge:
             return true
-        case .consume, .adjust:
+        case .consume, .adjust, .adminDeduct, .adminUpdate, .adminAdjust:
             return false
         }
     }

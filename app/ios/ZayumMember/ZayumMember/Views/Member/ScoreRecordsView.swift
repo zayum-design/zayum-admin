@@ -83,13 +83,13 @@ struct ScoreRecordsView: View {
 struct ScoreSummaryCard: View {
     let records: [ScoreRecord]
     
-    private var totalEarned: Int {
+    private var totalEarned: Double {
         records
             .filter { $0.type.isPositive }
             .reduce(0) { $0 + $1.score }
     }
     
-    private var totalUsed: Int {
+    private var totalUsed: Double {
         records
             .filter { !$0.type.isPositive }
             .reduce(0) { $0 + $1.score }
@@ -107,7 +107,7 @@ struct ScoreSummaryCard: View {
                     Text("累计获得")
                         .font(.caption)
                         .foregroundStyle(.secondary)
-                    Text("+\(totalEarned)")
+                    Text("+\(Int(totalEarned))")
                         .font(.title2)
                         .fontWeight(.semibold)
                         .foregroundStyle(.green)
@@ -122,7 +122,7 @@ struct ScoreSummaryCard: View {
                     Text("累计使用")
                         .font(.caption)
                         .foregroundStyle(.secondary)
-                    Text("-\(totalUsed)")
+                    Text("-\(Int(totalUsed))")
                         .font(.title2)
                         .fontWeight(.semibold)
                         .foregroundStyle(.red)
