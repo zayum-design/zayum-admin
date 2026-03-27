@@ -8,56 +8,43 @@ import {
   ChatRequest,
   ChatResponse,
   ChatStreamChunk,
+  GenerateRequest,
+  GenerateResponse,
   EmbeddingRequest,
   EmbeddingResponse,
 } from '../interfaces/ai-provider.interface';
 
 /**
- * 通义千问 (Qwen) 提供商
- * 阿里云的 Qwen 系列模型
+ * MiniMax 提供商
+ * MiniMax 是一家中国的 AI 公司，提供大语言模型服务
+ * API 格式兼容 OpenAI
+ * 文档: https://www.minimaxi.com/document
  */
 @Injectable()
-export class QwenProvider extends BaseAiProvider {
-  readonly provider = AiProvider.QWEN;
-  readonly name = '通义千问';
+export class MinimaxProvider extends BaseAiProvider {
+  readonly provider = AiProvider.MINIMAX;
+  readonly name = 'MiniMax';
 
-  // 通义千问模型列表（2026年最新）
+  // MiniMax 模型列表（2026年最新）
   private readonly availableModels = [
-    // Qwen3.5 系列（2026年最新，1M上下文，支持思考模式）
-    'qwen3.5-plus',
-    'qwen3.5-plus-2026-02-15',
-    // Qwen3-Max 系列（最强模型，1T+参数）
-    'qwen3-max',
-    'qwen3-max-latest',
-    // Qwen3-Coder 系列（代码专用）
-    'qwen3-coder-plus',
-    'qwen3-coder-flash',
-    // Qwen-Plus 系列（主力模型，Qwen3系列）
-    'qwen-plus',
-    'qwen-plus-latest',
-    'qwen-plus-2025-12-01',
-    'qwen-plus-2026-01-25',
-    // Qwen-Max 系列（最强模型）
-    'qwen-max',
-    'qwen-max-latest',
-    'qwen-max-2025-01-25',
-    // Qwen-VL 系列（多模态视觉）
-    'qwen3-vl-plus',
-    'qwen3-vl-flash',
-    'qwen-vl-max',
-    'qwen-vl-max-latest',
-    'qwen-vl-plus',
-    // QwQ 推理系列
-    'qwq-plus',
-    'qwq-max',
-    // 旧版模型
-    'qwen-turbo',
-    'qwen-max-longcontext',
-    'qwen-coder-plus',
-    // Embedding 模型
-    'text-embedding-v3',
-    'text-embedding-v2',
-    'text-embedding-v1',
+    // M2.7 系列（2026年3月最新，递归自改进模型）
+    'MiniMax-M2.7',
+    'MiniMax-M2.7-highspeed',
+    // M2.5 系列（2026年2月发布，编程和 Agent 专用）
+    'MiniMax-M2.5',
+    'MiniMax-M2.5-highspeed',
+    // M2.1 系列（2025年12月发布，多语言编程）
+    'MiniMax-M2.1',
+    'MiniMax-M2.1-highspeed',
+    // M2 系列（Agent 时代入门模型）
+    'MiniMax-M2',
+    'MiniMax-M2-highspeed',
+    // MiniMax-Text-01 系列（开源，4M上下文）
+    'minimax-text-01',
+    'minimax-vl-01',
+    // abab6.5 系列（旧版 MoE）
+    'abab6.5-chat',
+    'abab6.5s-chat',
   ];
 
   constructor(configService: ConfigService) {
@@ -66,23 +53,23 @@ export class QwenProvider extends BaseAiProvider {
   }
 
   /**
-   * 初始化 OpenAI 客户端
-   * 通义千问 API 兼容 OpenAI 格式
+   * 初始化 MiniMax 客户端
+   * MiniMax API 兼容 OpenAI 格式
    */
   protected initializeClient(): void {
     if (!this.isAvailable()) {
-      this.logger.warn('Qwen is not available. Please set AI_QWEN_API_KEY in your environment.');
+      this.logger.warn('MiniMax is not available. Please set AI_MINIMAX_API_KEY in your environment.');
       return;
     }
 
     this.client = new OpenAI({
       apiKey: this.config.apiKey,
-      baseURL: this.config.baseUrl || 'https://dashscope.aliyuncs.com/compatible-mode/v1',
+      baseURL: this.config.baseUrl || 'https://api.minimaxi.chat/v1',
       timeout: this.config.timeout,
       maxRetries: this.config.maxRetries,
     });
 
-    this.logger.log('Qwen client initialized');
+    this.logger.log('MiniMax client initialized');
   }
 
   /**
@@ -91,13 +78,14 @@ export class QwenProvider extends BaseAiProvider {
   protected getFallbackModel(type: AiModelType): string {
     switch (type) {
       case AiModelType.CHAT:
-        return 'qwen-turbo';
+        return 'minimax-text-01';
       case AiModelType.COMPLETION:
-        return 'qwen-turbo';
+        return 'minimax-text-01';
       case AiModelType.EMBEDDING:
-        return 'text-embedding-v3';
+        // MiniMax 暂不支持 embedding，返回默认值
+        return 'minimax-text-01';
       default:
-        return 'qwen-turbo';
+        return 'minimax-text-01';
     }
   }
 
@@ -113,7 +101,7 @@ export class QwenProvider extends BaseAiProvider {
    */
   async chat(request: ChatRequest): Promise<ChatResponse> {
     if (!this.isAvailable()) {
-      throw new Error('Qwen is not available');
+      throw new Error('MiniMax is not available');
     }
 
     try {
@@ -123,8 +111,8 @@ export class QwenProvider extends BaseAiProvider {
         model,
         messages: request.messages,
         temperature: request.temperature ?? 0.7,
-        max_tokens: request.maxTokens ? Math.min(request.maxTokens, 8192) : 8192,
-        top_p: request.topP ?? 0.95,
+        max_tokens: request.maxTokens ? Math.min(request.maxTokens, 16384) : undefined,
+        top_p: request.topP ?? 1,
         stream: false,
       });
 
@@ -154,19 +142,19 @@ export class QwenProvider extends BaseAiProvider {
    */
   chatStream(request: ChatRequest): Observable<ChatStreamChunk> {
     if (!this.isAvailable()) {
-      throw new Error('Qwen is not available');
+      throw new Error('MiniMax is not available');
     }
 
     const model = request.model || this.getDefaultModel(AiModelType.CHAT);
 
-    const streamGenerator = async function* (this: QwenProvider) {
+    const streamGenerator = async function* (this: MinimaxProvider) {
       try {
         const stream = await this.client.chat.completions.create({
           model,
           messages: request.messages,
           temperature: request.temperature ?? 0.7,
-          max_tokens: request.maxTokens ? Math.min(request.maxTokens, 8192) : 8192,
-          top_p: request.topP ?? 0.95,
+          max_tokens: request.maxTokens ? Math.min(request.maxTokens, 16384) : undefined,
+          top_p: request.topP ?? 1,
           stream: true,
         });
 
@@ -193,33 +181,51 @@ export class QwenProvider extends BaseAiProvider {
   }
 
   /**
-   * 获取 Embedding
+   * 文本生成（使用 Completions API）
    */
-  async embedding(request: EmbeddingRequest): Promise<EmbeddingResponse> {
+  async generate(request: GenerateRequest): Promise<GenerateResponse> {
     if (!this.isAvailable()) {
-      throw new Error('Qwen is not available');
+      throw new Error('MiniMax is not available');
     }
 
     try {
-      const model = request.model || this.getDefaultModel(AiModelType.EMBEDDING);
-      const input = Array.isArray(request.input) ? request.input : [request.input];
+      const model = request.model || this.getDefaultModel(AiModelType.COMPLETION);
 
-      const response = await this.client.embeddings.create({
+      const response = await this.client.completions.create({
         model,
-        input,
+        prompt: request.prompt,
+        temperature: request.temperature ?? 0.7,
+        max_tokens: request.maxTokens ? Math.min(request.maxTokens, 16384) : undefined,
       });
 
+      const choice = response.choices[0];
+
       return {
-        embeddings: response.data.map((item) => item.embedding),
+        id: response.id || this.generateId(),
+        text: choice.text || '',
         model: response.model,
         provider: this.provider,
         usage: response.usage ? {
           promptTokens: response.usage.prompt_tokens,
+          completionTokens: response.usage.completion_tokens,
           totalTokens: response.usage.total_tokens,
         } : undefined,
+        createdAt: new Date(),
       };
     } catch (error) {
-      this.handleError(error, 'Embedding');
+      this.handleError(error, 'Generate');
     }
+  }
+
+  /**
+   * 获取 Embedding
+   * MiniMax 暂不支持独立的 embedding API
+   */
+  async embedding(request: EmbeddingRequest): Promise<EmbeddingResponse> {
+    if (!this.isAvailable()) {
+      throw new Error('MiniMax is not available');
+    }
+
+    throw new Error('MiniMax does not support embedding API yet. Please use other provider for embeddings.');
   }
 }

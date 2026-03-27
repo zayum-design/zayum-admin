@@ -8,56 +8,57 @@ import {
   ChatRequest,
   ChatResponse,
   ChatStreamChunk,
+  GenerateRequest,
+  GenerateResponse,
   EmbeddingRequest,
   EmbeddingResponse,
 } from '../interfaces/ai-provider.interface';
 
 /**
- * 通义千问 (Qwen) 提供商
- * 阿里云的 Qwen 系列模型
+ * 智谱 AI (Zhipu AI / GLM) 提供商
+ * 智谱 AI 是中国的大模型公司，提供 GLM 系列模型
+ * API 格式兼容 OpenAI
+ * 文档: https://open.bigmodel.cn/dev/howuse/introduction
  */
 @Injectable()
-export class QwenProvider extends BaseAiProvider {
-  readonly provider = AiProvider.QWEN;
-  readonly name = '通义千问';
+export class ZhipuProvider extends BaseAiProvider {
+  readonly provider = AiProvider.ZHIPU;
+  readonly name = '智谱 AI (GLM)';
 
-  // 通义千问模型列表（2026年最新）
+  // 智谱 AI 模型列表（2026年最新）
   private readonly availableModels = [
-    // Qwen3.5 系列（2026年最新，1M上下文，支持思考模式）
-    'qwen3.5-plus',
-    'qwen3.5-plus-2026-02-15',
-    // Qwen3-Max 系列（最强模型，1T+参数）
-    'qwen3-max',
-    'qwen3-max-latest',
-    // Qwen3-Coder 系列（代码专用）
-    'qwen3-coder-plus',
-    'qwen3-coder-flash',
-    // Qwen-Plus 系列（主力模型，Qwen3系列）
-    'qwen-plus',
-    'qwen-plus-latest',
-    'qwen-plus-2025-12-01',
-    'qwen-plus-2026-01-25',
-    // Qwen-Max 系列（最强模型）
-    'qwen-max',
-    'qwen-max-latest',
-    'qwen-max-2025-01-25',
-    // Qwen-VL 系列（多模态视觉）
-    'qwen3-vl-plus',
-    'qwen3-vl-flash',
-    'qwen-vl-max',
-    'qwen-vl-max-latest',
-    'qwen-vl-plus',
-    // QwQ 推理系列
-    'qwq-plus',
-    'qwq-max',
-    // 旧版模型
-    'qwen-turbo',
-    'qwen-max-longcontext',
-    'qwen-coder-plus',
+    // GLM-4.7 系列（2025年12月最新，编程和推理专用）
+    'glm-4.7',
+    'glm-4.6',
+    // GLM-Z1 系列（2025年4月发布，深度推理模型）
+    'glm-z1-rumination-32b',   // 32B 沉思型推理模型
+    'glm-z1-32b',              // 32B 高性能推理模型
+    'glm-z1-9b',               // 9B 轻量推理模型
+    // GLM-4.5 系列（主力模型）
+    'glm-4.5',
+    'glm-4.5-air',
+    // GLM-4-Plus 系列（旗舰模型）
+    'glm-4-plus',
+    'glm-4-0520',
+    // GLM-4 标准系列
+    'glm-4',
+    'glm-4-air',
+    'glm-4-airx',
+    'glm-4-long',              // 支持 1M 上下文
+    // GLM-4-Flash 系列（极速/免费）
+    'glm-4-flash',
+    'glm-4-flashx',
+    // GLM-4V 系列（多模态视觉）
+    'glm-4v',
+    'glm-4v-plus',
+    'glm-4v-flash',
+    // GLM-4-9B 开源系列
+    'glm-4-9b-chat',
+    'glm-4-9b-chat-1m',
+    'glm-4v-9b-chat',
     // Embedding 模型
-    'text-embedding-v3',
-    'text-embedding-v2',
-    'text-embedding-v1',
+    'embedding-3',
+    'embedding-2',
   ];
 
   constructor(configService: ConfigService) {
@@ -66,23 +67,23 @@ export class QwenProvider extends BaseAiProvider {
   }
 
   /**
-   * 初始化 OpenAI 客户端
-   * 通义千问 API 兼容 OpenAI 格式
+   * 初始化智谱 AI 客户端
+   * 智谱 API 兼容 OpenAI 格式
    */
   protected initializeClient(): void {
     if (!this.isAvailable()) {
-      this.logger.warn('Qwen is not available. Please set AI_QWEN_API_KEY in your environment.');
+      this.logger.warn('智谱 AI is not available. Please set AI_ZHIPU_API_KEY in your environment.');
       return;
     }
 
     this.client = new OpenAI({
       apiKey: this.config.apiKey,
-      baseURL: this.config.baseUrl || 'https://dashscope.aliyuncs.com/compatible-mode/v1',
+      baseURL: this.config.baseUrl || 'https://open.bigmodel.cn/api/paas/v4',
       timeout: this.config.timeout,
       maxRetries: this.config.maxRetries,
     });
 
-    this.logger.log('Qwen client initialized');
+    this.logger.log('智谱 AI (GLM) client initialized');
   }
 
   /**
@@ -91,13 +92,13 @@ export class QwenProvider extends BaseAiProvider {
   protected getFallbackModel(type: AiModelType): string {
     switch (type) {
       case AiModelType.CHAT:
-        return 'qwen-turbo';
+        return 'glm-4';
       case AiModelType.COMPLETION:
-        return 'qwen-turbo';
+        return 'glm-4';
       case AiModelType.EMBEDDING:
-        return 'text-embedding-v3';
+        return 'embedding-3';
       default:
-        return 'qwen-turbo';
+        return 'glm-4';
     }
   }
 
@@ -113,7 +114,7 @@ export class QwenProvider extends BaseAiProvider {
    */
   async chat(request: ChatRequest): Promise<ChatResponse> {
     if (!this.isAvailable()) {
-      throw new Error('Qwen is not available');
+      throw new Error('智谱 AI is not available');
     }
 
     try {
@@ -123,8 +124,8 @@ export class QwenProvider extends BaseAiProvider {
         model,
         messages: request.messages,
         temperature: request.temperature ?? 0.7,
-        max_tokens: request.maxTokens ? Math.min(request.maxTokens, 8192) : 8192,
-        top_p: request.topP ?? 0.95,
+        max_tokens: request.maxTokens ? Math.min(request.maxTokens, 16384) : undefined,
+        top_p: request.topP ?? 1,
         stream: false,
       });
 
@@ -154,19 +155,19 @@ export class QwenProvider extends BaseAiProvider {
    */
   chatStream(request: ChatRequest): Observable<ChatStreamChunk> {
     if (!this.isAvailable()) {
-      throw new Error('Qwen is not available');
+      throw new Error('智谱 AI is not available');
     }
 
     const model = request.model || this.getDefaultModel(AiModelType.CHAT);
 
-    const streamGenerator = async function* (this: QwenProvider) {
+    const streamGenerator = async function* (this: ZhipuProvider) {
       try {
         const stream = await this.client.chat.completions.create({
           model,
           messages: request.messages,
           temperature: request.temperature ?? 0.7,
-          max_tokens: request.maxTokens ? Math.min(request.maxTokens, 8192) : 8192,
-          top_p: request.topP ?? 0.95,
+          max_tokens: request.maxTokens ? Math.min(request.maxTokens, 16384) : undefined,
+          top_p: request.topP ?? 1,
           stream: true,
         });
 
@@ -193,11 +194,43 @@ export class QwenProvider extends BaseAiProvider {
   }
 
   /**
+   * 文本生成（使用 Completions API）
+   * 智谱 API 主要支持 chat.completions，这里使用 chat 接口模拟
+   */
+  async generate(request: GenerateRequest): Promise<GenerateResponse> {
+    if (!this.isAvailable()) {
+      throw new Error('智谱 AI is not available');
+    }
+
+    try {
+      const chatRequest: ChatRequest = {
+        messages: [{ role: 'user', content: request.prompt }],
+        model: request.model || this.getDefaultModel(AiModelType.CHAT),
+        temperature: request.temperature,
+        maxTokens: request.maxTokens,
+      };
+
+      const chatResponse = await this.chat(chatRequest);
+
+      return {
+        id: chatResponse.id,
+        text: chatResponse.content,
+        model: chatResponse.model,
+        provider: this.provider,
+        usage: chatResponse.usage,
+        createdAt: chatResponse.createdAt,
+      };
+    } catch (error) {
+      this.handleError(error, 'Generate');
+    }
+  }
+
+  /**
    * 获取 Embedding
    */
   async embedding(request: EmbeddingRequest): Promise<EmbeddingResponse> {
     if (!this.isAvailable()) {
-      throw new Error('Qwen is not available');
+      throw new Error('智谱 AI is not available');
     }
 
     try {

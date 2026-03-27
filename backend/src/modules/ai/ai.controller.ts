@@ -156,4 +156,13 @@ export class AiController {
   async healthCheck() {
     return this.aiService.healthCheck();
   }
+
+  /**
+   * 获取当前默认AI配置
+   */
+  @Get('config')
+  @CliPublic()
+  getConfig() {
+    return this.aiService.getDefaultConfig();
+  }
 }

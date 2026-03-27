@@ -4,8 +4,12 @@ import { Observable } from 'rxjs';
 import {
   DeepseekProvider,
   OpenaiProvider,
+  AnthropicProvider,
   QwenProvider,
   MoonshotProvider,
+  OpenrouterProvider,
+  MinimaxProvider,
+  ZhipuProvider,
 } from './providers';
 import { IAiProvider, ChatRequest, ChatResponse, ChatStreamChunk, GenerateRequest, GenerateResponse, EmbeddingRequest, EmbeddingResponse } from './interfaces/ai-provider.interface';
 import { AiProvider } from './enums/ai-provider.enum';
@@ -39,8 +43,12 @@ export class AiService {
     const providers = [
       { key: AiProvider.DEEPSEEK, class: DeepseekProvider },
       { key: AiProvider.OPENAI, class: OpenaiProvider },
+      { key: AiProvider.ANTHROPIC, class: AnthropicProvider },
       { key: AiProvider.QWEN, class: QwenProvider },
       { key: AiProvider.MOONSHOT, class: MoonshotProvider },
+      { key: AiProvider.OPENROUTER, class: OpenrouterProvider },
+      { key: AiProvider.MINIMAX, class: MinimaxProvider },
+      { key: AiProvider.ZHIPU, class: ZhipuProvider },
     ];
 
     for (const { key, class: ProviderClass } of providers) {
@@ -84,6 +92,34 @@ export class AiService {
       name: provider.name,
       models: provider.getAvailableModels(),
     }));
+  }
+
+  /**
+   * 获取默认配置
+   */
+  getDefaultConfig(): { provider: string; model: string; providerName: string } {
+    // 尝试使用默认提供商
+    let provider = this.providers.get(this.defaultProvider);
+    let providerKey = this.defaultProvider;
+    
+    // 如果默认提供商不可用，使用第一个可用的
+    if (!provider) {
+      const firstAvailable = Array.from(this.providers.entries())[0];
+      if (firstAvailable) {
+        providerKey = firstAvailable[0];
+        provider = firstAvailable[1];
+      }
+    }
+    
+    if (!provider) {
+      throw new NotFoundException('No AI provider available');
+    }
+    
+    return {
+      provider: providerKey,
+      model: provider.getDefaultModel(),
+      providerName: provider.name,
+    };
   }
 
   /**

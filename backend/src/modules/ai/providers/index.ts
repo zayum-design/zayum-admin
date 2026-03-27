@@ -1,5 +1,9 @@
 export { BaseAiProvider } from './base.provider';
 export { DeepseekProvider } from './deepseek.provider';
 export { OpenaiProvider } from './openai.provider';
+export { AnthropicProvider } from './anthropic.provider';
 export { QwenProvider } from './qwen.provider';
 export { MoonshotProvider } from './moonshot.provider';
+export { OpenrouterProvider } from './openrouter.provider';
+export { MinimaxProvider } from './minimax.provider';
+export { ZhipuProvider } from './zhipu.provider';

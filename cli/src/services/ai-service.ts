@@ -81,16 +81,21 @@ export class AiService {
 
       const result = response.data;
       
+      const content = result.content || result.data?.content;
+      
       if (this.currentSession) {
-        this.currentSession.messages.push({ 
-          role: 'assistant', 
-          content: result.content || result.data?.content 
-        });
+        // 过滤掉空内容的 assistant 消息（Moonshot API 不允许空内容）
+        if (content && content.trim()) {
+          this.currentSession.messages.push({ 
+            role: 'assistant', 
+            content: content 
+          });
+        }
         this.currentSession.updatedAt = new Date();
         await this.saveSession(this.currentSession);
       }
 
-      return result.content || result.data?.content;
+      return content;
     } catch (error: any) {
       throw new Error(`AI 请求失败: ${error.message}`);
     }
@@ -144,10 +149,13 @@ export class AiService {
       }
 
       if (this.currentSession) {
-        this.currentSession.messages.push({ 
-          role: 'assistant', 
-          content: fullContent 
-        });
+        // 过滤掉空内容的 assistant 消息（Moonshot API 不允许空内容）
+        if (fullContent && fullContent.trim()) {
+          this.currentSession.messages.push({ 
+            role: 'assistant', 
+            content: fullContent 
+          });
+        }
         this.currentSession.updatedAt = new Date();
         await this.saveSession(this.currentSession);
       }
@@ -260,6 +268,29 @@ export class AiService {
         { key: 'deepseek', name: 'DeepSeek', models: ['deepseek-chat', 'deepseek-reasoner'] },
         { key: 'openai', name: 'OpenAI', models: ['gpt-4o', 'gpt-3.5-turbo'] },
       ];
+    }
+  }
+
+  /**
+   * 获取当前默认AI配置
+   */
+  async getDefaultConfig(): Promise<{ provider: string; model: string; providerName: string }> {
+    try {
+      const response = await this.client.get('/ai/config');
+      // 后端返回格式: { code, message, data }
+      const data = response.data.data || response.data;
+      return {
+        provider: data.provider || 'deepseek',
+        model: data.model || 'deepseek-chat',
+        providerName: data.providerName || 'DeepSeek',
+      };
+    } catch {
+      // 返回默认值
+      return {
+        provider: 'deepseek',
+        model: 'deepseek-chat',
+        providerName: 'DeepSeek',
+      };
     }
   }
 

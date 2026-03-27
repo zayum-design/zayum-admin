@@ -4,9 +4,12 @@
 export enum AiProvider {
   DEEPSEEK = 'deepseek',
   OPENAI = 'openai',
-  ANTHROPIC = 'anthropic',
+  ANTHROPIC = 'anthropic', // Anthropic Claude
   QWEN = 'qwen',        // 通义千问
-  MOONSHOT = 'moonshot', // Kimi
+  MOONSHOT = 'moonshot', // Kimi / Moonshot
+  OPENROUTER = 'openrouter', // OpenRouter
+  MINIMAX = 'minimax',  // MiniMax
+  ZHIPU = 'zhipu',      // 智谱 AI (GLM)
   CUSTOM = 'custom',
 }
 

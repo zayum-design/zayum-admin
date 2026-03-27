@@ -33,6 +33,17 @@ export class InteractiveCommand {
   async start(): Promise<void> {
     console.log(chalk.cyan.bold('\n🚀 Zayum CLI - AI 代码生成器\n'));
 
+    // 获取并显示实际AI配置
+    try {
+      const config = await this.aiService.getDefaultConfig();
+      this.currentProvider = config.provider;
+      this.currentModel = config.model;
+      console.log(chalk.gray(`厂商${config.providerName}，模型：${config.model}`));
+    } catch {
+      console.log(chalk.gray(`厂商${this.currentProvider}，模型：${this.currentModel}`));
+    }
+    console.log();
+
     // 分析项目结构
     const spinner = ora({ text: '正在分析项目结构...', spinner: 'dots' }).start();
     try {

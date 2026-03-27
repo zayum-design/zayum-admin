@@ -77,7 +77,7 @@ export class CodeGenerator {
     const blocks: Array<{ filename?: string; language?: string; content: string }> = [];
     
     // 匹配 ```filename.ext 或 ```language 格式的代码块
-    const regex = /```(?:(\w+\.(?:ts|tsx|js|jsx|vue|json))|(\w+))?\n([\s\S]*?)```/g;
+    const regex = /```(?:([\w\.\/\-]+\.(?:ts|tsx|js|jsx|vue|json|sql))|(\w+))?\n([\s\S]*?)```/g;
     let match;
     
     while ((match = regex.exec(content)) !== null) {
@@ -110,13 +110,13 @@ export class CodeGenerator {
     const pureFilename = filename ? path.basename(filename) : '';
     
     // 根据文件名判断
-    if (filename.includes('.entity.')) {
+    if (filename && filename.includes('.entity.')) {
       return { 
         type: 'entity', 
         path: path.join(this.projectStructure.backend?.entitiesPath || '', pureFilename) 
       };
     }
-    if (filename.includes('.dto.') || filename.includes('.dto/')) {
+    if (filename && (filename.includes('.dto.') || filename.includes('.dto/'))) {
       // DTO 文件需要保留子目录结构，如 dto/create-xxx.dto.ts
       const dtoMatch = filename.match(/dto[\/]([^/]+\.dto\.ts)$/);
       const dtoFilename = dtoMatch ? `dto/${dtoMatch[1]}` : pureFilename;
@@ -130,7 +130,7 @@ export class CodeGenerator {
         path: path.join(modulePath, dtoFilename) 
       };
     }
-    if (filename.includes('.service.')) {
+    if (filename && filename.includes('.service.')) {
       // 检查是否是前端服务文件
       if (filename.includes('frontend/') || filename.includes('src/services/')) {
         return { 
@@ -150,7 +150,7 @@ export class CodeGenerator {
         path: path.join(modulePath, pureFilename) 
       };
     }
-    if (filename.includes('.controller.')) {
+    if (filename && filename.includes('.controller.')) {
       const moduleMatch = filename.match(/modules\/([^/]+)/);
       const moduleName = moduleMatch ? moduleMatch[1] : '';
       const modulePath = moduleName 
@@ -161,7 +161,7 @@ export class CodeGenerator {
         path: path.join(modulePath, pureFilename) 
       };
     }
-    if (filename.includes('.module.')) {
+    if (filename && filename.includes('.module.')) {
       const moduleMatch = filename.match(/modules\/([^/]+)/);
       const moduleName = moduleMatch ? moduleMatch[1] : '';
       const modulePath = moduleName 
@@ -174,7 +174,7 @@ export class CodeGenerator {
     }
     
     // 数据库迁移脚本识别
-    if (filename.includes('.sql') || filename.includes('add_') && (filename.includes('_table') || filename.includes('_fields'))) {
+    if (filename && (filename.includes('.sql') || filename.includes('add_') && (filename.includes('_table') || filename.includes('_fields')))) {
       // 提取模块名 - 匹配 add_xxx_yyy_zzz_table.sql 或 add_xxx_yyy_fields.sql
       const sqlMatch = filename.match(/add_([^_]+(?:_[^_]+)*?)_(?:table|fields)\.sql$/);
       if (sqlMatch) {

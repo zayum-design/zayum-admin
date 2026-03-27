@@ -21,10 +21,17 @@ export class DeepseekProvider extends BaseAiProvider {
   readonly provider = AiProvider.DEEPSEEK;
   readonly name = 'DeepSeek';
 
-  // DeepSeek 官方模型列表
+  // DeepSeek 模型列表（2026年最新）
   private readonly availableModels = [
-    'deepseek-chat',        // DeepSeek-V3
-    'deepseek-reasoner',    // DeepSeek-R1
+    // DeepSeek-V4 系列（2026年3月最新旗舰，1M上下文）
+    'deepseek-v4',             // V4 旗舰版（1M上下文，多模态）
+    // DeepSeek-V3.2 系列（当前稳定版本）
+    'deepseek-chat',           // V3.2 非思考模式（通用对话）
+    'deepseek-reasoner',       // V3.2 思考模式（推理增强）
+    // DeepSeek-R1 系列（推理专用）
+    'deepseek-r1',             // R1 推理模型
+    // 代码专用模型
+    'deepseek-coder',          // 代码专用模型
   ];
 
   constructor(configService: ConfigService) {

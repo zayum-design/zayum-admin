@@ -21,8 +21,23 @@ export class MoonshotProvider extends BaseAiProvider {
   readonly provider = AiProvider.MOONSHOT;
   readonly name = 'Moonshot (Kimi)';
 
-  // Moonshot 模型列表
+  // Moonshot 模型列表（2026年最新，包含 Kimi K2.5）
   private readonly availableModels = [
+    // Kimi K2.5 系列（2026年1月最新发布，256K上下文，多模态）
+    'kimi-k2.5',
+    'kimi-k2.5-highspeed',
+    // Kimi K2 系列（主力模型，1T参数）
+    'kimi-k2',
+    'kimi-k2-turbo',
+    'kimi-k2-thinking',
+    'kimi-k2-thinking-turbo',
+    // Kimi K1.5 系列（推理专用）
+    'kimi-k1.5',
+    'kimi-k1.5-long-context',
+    // Kimi V1 系列
+    'kimi-v1',
+    'kimi-v1-mapi',
+    // 标准模型（旧版兼容）
     'moonshot-v1-8k',
     'moonshot-v1-32k',
     'moonshot-v1-128k',
@@ -91,17 +106,20 @@ export class MoonshotProvider extends BaseAiProvider {
       const response = await this.client.chat.completions.create({
         model,
         messages: request.messages,
-        temperature: request.temperature ?? 0.3,
-        max_tokens: request.maxTokens ? Math.min(request.maxTokens, 8192) : 8192,
-        top_p: request.topP ?? 1,
+        temperature: 1,  // Kimi K2.5 只接受 temperature=1
+        max_tokens: request.maxTokens ? Math.min(request.maxTokens, 32768) : 32768,
+        top_p: 0.95,
         stream: false,
       });
 
       const choice = response.choices[0];
+      
+      // Kimi K2.5 模型返回的内容在 reasoning_content 中
+      const content = (choice.message as any).reasoning_content || choice.message.content || '';
 
       return {
         id: response.id || this.generateId(),
-        content: choice.message.content || '',
+        content: content,
         role: choice.message.role,
         model: response.model,
         provider: this.provider,
@@ -133,19 +151,22 @@ export class MoonshotProvider extends BaseAiProvider {
         const stream = await this.client.chat.completions.create({
           model,
           messages: request.messages,
-          temperature: request.temperature ?? 0.3,
-          max_tokens: request.maxTokens ? Math.min(request.maxTokens, 8192) : 8192,
-          top_p: request.topP ?? 1,
+          temperature: 1,  // Kimi K2.5 只接受 temperature=1
+          max_tokens: request.maxTokens ? Math.min(request.maxTokens, 32768) : 32768,
+          top_p: 0.95,
           stream: true,
         });
 
         for await (const chunk of stream) {
           const delta = chunk.choices[0]?.delta;
           
-          if (delta?.content || delta?.role) {
+          // Kimi K2.5 模型返回的内容在 reasoning_content 中
+          const content = delta?.reasoning_content || delta?.content || '';
+          
+          if (content || delta?.role) {
             yield {
               id: chunk.id || this.generateId(),
-              content: delta.content || '',
+              content: content,
               role: delta.role,
               model: chunk.model,
               finishReason: chunk.choices[0]?.finish_reason,
