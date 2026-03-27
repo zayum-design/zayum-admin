@@ -8,6 +8,12 @@
 
 一个现代化的企业级后台管理系统，基于前后端分离架构，提供完整的用户管理、权限控制、系统监控等功能。
 
+## 🐟 关于 Zayum
+
+**Zayum**（栈鱼）是「栈鱼」的英文谐音。
+
+> 作者自认为自己是一只做全栈开发的鱼 🐟 —— 穿梭于技术栈的海洋中，前端游弋，后端深潜，全栈畅游。
+
 ## 🌟 功能特性
 
 ### 🎯 核心功能
@@ -53,6 +59,10 @@
 - **HTTP客户端**：Axios
 - **表单处理**：React Hook Form + Zod
 
+### App 技术栈
+- **Web App**：React 19.x + Vite 8.x + Ant Design 6.x
+- **iOS App**：原生 iOS 开发（Swift）
+
 ## 📁 项目结构
 
 ```
@@ -68,7 +78,7 @@ zayum-admin/
 │   │   ├── database/       # 数据库配置和种子数据
 │   │   └── main.ts         # 应用入口
 │   └── package.json
-├── frontend/               # 前端应用
+├── frontend/               # 管理后台前端
 │   ├── src/
 │   │   ├── pages/         # 页面组件
 │   │   │   ├── dashboard/ # 仪表盘
@@ -81,6 +91,16 @@ zayum-admin/
 │   │   ├── services/      # API服务
 │   │   └── utils/         # 工具函数
 │   └── package.json
+├── cli/                    # AI CLI 代码生成器
+│   ├── src/               # CLI 源码
+│   ├── bin/               # 可执行文件
+│   └── package.json
+├── app/                    # 客户端应用
+│   ├── web/               # Web 应用（会员端）
+│   │   ├── src/           # 源码
+│   │   └── package.json
+│   └── ios/               # iOS 原生应用
+│       └── ZayumMember/   # iOS 项目
 ├── development-guide/      # 开发指南文档
 └── README.md              # 项目说明文档
 ```
@@ -150,6 +170,44 @@ zayum-admin/
    - 后端API：http://localhost:3000
    - 前端应用：http://localhost:5173
 
+### Web App 配置
+
+1. **进入 Web App 目录**
+   ```bash
+   cd app/web
+   ```
+
+2. **安装依赖**
+   ```bash
+   npm install
+   ```
+
+3. **启动开发服务器**
+   ```bash
+   npm run dev
+   ```
+
+4. **访问应用**
+   - Web App：http://localhost:5174
+
+### iOS App 配置
+
+1. **进入 iOS 项目目录**
+   ```bash
+   cd app/ios/ZayumMember
+   ```
+
+2. **使用 Xcode 打开项目**
+   ```bash
+   open ZayumMember.xcodeproj
+   # 或
+   open ZayumMember.xcworkspace
+   ```
+
+3. **在 Xcode 中运行**
+   - 选择目标设备/模拟器
+   - 点击运行按钮或按 `Cmd + R`
+
 ### 环境配置说明
 
 #### 后端环境变量 (.env)
@@ -172,6 +230,9 @@ NODE_ENV=development
 
 # 前端地址 (用于 CORS)
 FRONTEND_URL=http://localhost:5173
+
+# Web App 地址 (用于 CORS)
+WEBAPP_URL=http://localhost:5174
 ```
 
 #### 数据库初始化
@@ -291,6 +352,13 @@ services:
     build: ./frontend
     ports:
       - "5173:5173"
+    depends_on:
+      - backend
+
+  webapp:
+    build: ./app/web
+    ports:
+      - "5174:5174"
     depends_on:
       - backend
 
