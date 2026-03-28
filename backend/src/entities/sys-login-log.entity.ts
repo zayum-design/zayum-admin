@@ -7,12 +7,8 @@ import {
 } from 'typeorm';
 
 @Entity('sys_login_log')
-@Index('idx_user_type', ['userType'])
-@Index('idx_user_id', ['userId'])
-@Index('idx_created_at', ['createdAt'])
-@Index('idx_status', ['status'])
 export class SysLoginLog {
-  @PrimaryGeneratedColumn('increment', { type: 'bigint' })
+  @PrimaryGeneratedColumn()
   id: number;
 
   @Column({ type: 'varchar', length: 20, name: 'user_type' })

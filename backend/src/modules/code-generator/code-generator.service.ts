@@ -1098,7 +1098,7 @@ export const ${moduleCamelName}Service = {
 
     // 检查菜单是否已存在
     const existingMenu = await this.dataSource.query(
-      'SELECT id FROM sys_permission WHERE code = $1',
+      'SELECT id FROM sys_admin_permission WHERE code = $1',
       [menuCode]
     );
 
@@ -1110,7 +1110,7 @@ export const ${moduleCamelName}Service = {
     let parentId = 0;
     if (parentCode) {
       const parentMenu = await this.dataSource.query(
-        'SELECT id FROM sys_permission WHERE code = $1 AND type = $2',
+        'SELECT id FROM sys_admin_permission WHERE code = $1 AND type = $2',
         [parentCode, 'menu']
       );
       if (parentMenu.length > 0) {
@@ -1120,7 +1120,7 @@ export const ${moduleCamelName}Service = {
 
     // 插入菜单
     const result = await this.dataSource.query(
-      `INSERT INTO sys_permission 
+      `INSERT INTO sys_admin_permission
        (parent_id, name, code, type, path, icon, sort, status, created_at, updated_at)
        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, NOW(), NOW())
        RETURNING id`,
@@ -1138,7 +1138,7 @@ export const ${moduleCamelName}Service = {
 
     for (const btn of buttonPermissions) {
       await this.dataSource.query(
-        `INSERT INTO sys_permission 
+        `INSERT INTO sys_admin_permission
          (parent_id, name, code, type, sort, status, created_at, updated_at)
          VALUES ($1, $2, $3, $4, $5, $6, NOW(), NOW())`,
         [menuId, btn.name, btn.code, 'button', btn.sort, 'normal']
@@ -1467,7 +1467,7 @@ export const ${moduleCamelName}Service = {
 
     // 查找菜单
     const menuResult = await this.dataSource.query(
-      'SELECT id FROM sys_permission WHERE code = $1 AND type = $2',
+      'SELECT id FROM sys_admin_permission WHERE code = $1 AND type = $2',
       [menuCode, 'menu']
     );
 
@@ -1479,13 +1479,13 @@ export const ${moduleCamelName}Service = {
 
     // 删除该菜单下的所有按钮权限
     await this.dataSource.query(
-      'DELETE FROM sys_permission WHERE parent_id = $1 AND type = $2',
+      'DELETE FROM sys_admin_permission WHERE parent_id = $1 AND type = $2',
       [menuId, 'button']
     );
 
     // 删除菜单
     await this.dataSource.query(
-      'DELETE FROM sys_permission WHERE id = $1',
+      'DELETE FROM sys_admin_permission WHERE id = $1',
       [menuId]
     );
 

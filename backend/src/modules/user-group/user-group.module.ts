@@ -4,8 +4,8 @@ import { UserGroupController } from './user-group.controller';
 import { UserGroupService } from './user-group.service';
 import { SysUserGroup } from '../../entities/sys-user-group.entity';
 import { SysUser } from '../../entities/sys-user.entity';
-import { SysRolePermission } from '../../entities/sys-role-permission.entity';
-import { SysPermission } from '../../entities/sys-permission.entity';
+import { SysUserRolePermission } from '../../entities/sys-user-role-permission.entity';
+import { SysUserPermission } from '../../entities/sys-user-permission.entity';
 import { SysOperationLog } from '../../entities/sys-operation-log.entity';
 
 @Module({
@@ -13,8 +13,8 @@ import { SysOperationLog } from '../../entities/sys-operation-log.entity';
     TypeOrmModule.forFeature([
       SysUserGroup,
       SysUser,
-      SysRolePermission,
-      SysPermission,
+      SysUserRolePermission,
+      SysUserPermission,
       SysOperationLog,
     ]),
   ],

@@ -4,8 +4,8 @@ import { AdminGroupController } from './admin-group.controller';
 import { AdminGroupService } from './admin-group.service';
 import { SysAdminGroup } from '../../entities/sys-admin-group.entity';
 import { SysAdmin } from '../../entities/sys-admin.entity';
-import { SysRolePermission } from '../../entities/sys-role-permission.entity';
-import { SysPermission } from '../../entities/sys-permission.entity';
+import { SysAdminRolePermission } from '../../entities/sys-admin-role-permission.entity';
+import { SysAdminPermission } from '../../entities/sys-admin-permission.entity';
 import { SysOperationLog } from '../../entities/sys-operation-log.entity';
 
 @Module({
@@ -13,8 +13,8 @@ import { SysOperationLog } from '../../entities/sys-operation-log.entity';
     TypeOrmModule.forFeature([
       SysAdminGroup,
       SysAdmin,
-      SysRolePermission,
-      SysPermission,
+      SysAdminRolePermission,
+      SysAdminPermission,
       SysOperationLog,
     ]),
   ],

@@ -6,8 +6,8 @@ import { ThrottlerModule } from '@nestjs/throttler';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthModule } from './modules/auth/auth.module';
-import { PermissionModule } from './modules/permission/permission.module';
-import { RolePermissionModule } from './modules/role-permission/role-permission.module';
+import { AdminPermissionModule } from './modules/admin-permission/admin-permission.module';
+import { AdminRolePermissionModule } from './modules/admin-role-permission/admin-role-permission.module';
 import { AdminModule } from './modules/admin/admin.module';
 import { AdminGroupModule } from './modules/admin-group/admin-group.module';
 import { UserModule } from './modules/user/user.module';
@@ -20,29 +20,49 @@ import { ProfileModule } from './modules/profile/profile.module';
 import { AiModule } from './modules/ai/ai.module';
 import { MemberModule } from './modules/member/member.module';
 import { CodeGeneratorModule } from './modules/code-generator/code-generator.module';
+import { PluginModule } from './modules/plugin/plugin.module';
 import { JwtAuthGuard } from './modules/auth/guards/jwt-auth.guard';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 import { ResponseInterceptor } from './common/interceptors/response.interceptor';
+import { SysUserPermissionModule } from './modules/user-permission/user-permission.module';
+import { SysUserOrderModule } from './modules/user-order/user-order.module';
 
 @Module({
   imports: [
     NestConfigModule.forRoot({
       isGlobal: true,
-      envFilePath: '.env',
+      envFilePath: process.env.NODE_ENV === 'test' ? '.env.test' : '.env',
     }),
     TypeOrmModule.forRootAsync({
       imports: [NestConfigModule],
-      useFactory: (configService: ConfigService) => ({
-        type: 'postgres',
-        host: configService.get('DB_HOST') || 'localhost',
-        port: parseInt(configService.get('DB_PORT') || '5432', 10),
-        username: configService.get('DB_USERNAME') || 'niujinhui',
-        password: configService.get('DB_PASSWORD') || '',
-        database: configService.get('DB_DATABASE') || 'system_admin',
-        entities: [__dirname + '/**/*.entity{.ts,.js}'],
-        synchronize: false,
-        logging: false,
-      }),
+      useFactory: (configService: ConfigService) => {
+        const nodeEnv = configService.get('NODE_ENV') || 'development';
+
+        // 测试环境下使用SQLite内存数据库
+        if (nodeEnv === 'test') {
+          return {
+            type: 'sqlite',
+            database: ':memory:',
+            entities: [__dirname + '/**/*.entity{.ts,.js}'],
+            synchronize: true, // 测试环境下自动同步表结构
+            dropSchema: true, // 测试环境下先删除现有模式
+            logging: false,
+          };
+        }
+
+        // 生产/开发环境使用PostgreSQL
+        return {
+          type: 'postgres',
+          host: configService.get('DB_HOST') || 'localhost',
+          port: parseInt(configService.get('DB_PORT') || '5432', 10),
+          username: configService.get('DB_USERNAME') || 'niujinhui',
+          password: configService.get('DB_PASSWORD') || '',
+          database: configService.get('DB_DATABASE') || 'system_admin',
+          entities: [__dirname + '/**/*.entity{.ts,.js}'],
+          synchronize: false,
+          logging: false,
+        };
+      },
       inject: [ConfigService],
     }),
     // 限流配置：100个请求在60秒内
@@ -51,8 +71,8 @@ import { ResponseInterceptor } from './common/interceptors/response.interceptor'
       limit: 100,
     }]),
     AuthModule,
-    PermissionModule,
-    RolePermissionModule,
+    AdminPermissionModule,
+    AdminRolePermissionModule,
     AdminModule,
     AdminGroupModule,
     UserModule,
@@ -63,8 +83,9 @@ import { ResponseInterceptor } from './common/interceptors/response.interceptor'
     NotificationModule,
     ProfileModule,
     AiModule,
-    MemberModule,
-    CodeGeneratorModule,
+    MemberModule,    SysUserOrderModule,
+    CodeGeneratorModule,    SysUserPermissionModule,
+    PluginModule,
   ],
   controllers: [AppController],
   providers: [

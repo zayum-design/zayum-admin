@@ -1,5 +1,5 @@
-import { useEffect } from 'react';
-import { Layout, Menu, Avatar, Dropdown, Badge, Typography, Row, Col, Card } from 'antd';
+import { useEffect, useState } from 'react';
+import { Layout, Menu, Avatar, Dropdown, Badge, Typography, Row, Col, Card, Spin } from 'antd';
 import { Outlet, useNavigate, useLocation, Link } from 'react-router-dom';
 import {
   UserOutlined,
@@ -13,15 +13,59 @@ import {
 } from '@ant-design/icons';
 import { useAuthStore } from '../store/auth.store';
 import { useMemberStore } from '../store/member.store';
+import { menuService, type MenuItem } from '../services/menu.service';
+import type { ReactNode } from 'react';
 
 const { Header, Sider, Content } = Layout;
 const { Text } = Typography;
+
+// 图标映射表
+const iconMapping: Record<string, ReactNode> = {
+  HomeOutlined: <HomeOutlined />,
+  UserOutlined: <UserOutlined />,
+  PayCircleOutlined: <PayCircleOutlined />,
+  WalletOutlined: <WalletOutlined />,
+  GiftOutlined: <GiftOutlined />,
+  HistoryOutlined: <HistoryOutlined />,
+};
+
+// 将后端菜单数据转换为 Ant Design Menu 组件需要的格式
+const convertMenuData = (menus: MenuItem[]): any[] => {
+  return menus.map((menu) => {
+    const menuItem: any = {
+      key: menu.path || menu.code,
+      icon: menu.icon ? iconMapping[menu.icon] || null : null,
+      label: menu.path ? <Link to={menu.path}>{menu.name}</Link> : menu.name,
+    };
+
+    // 如果有子菜单，递归转换
+    if (menu.children && menu.children.length > 0) {
+      menuItem.children = convertMenuData(menu.children);
+    }
+
+    return menuItem;
+  });
+};
+
+// 获取默认展开的菜单 key
+const getDefaultOpenKeys = (menus: MenuItem[]): string[] => {
+  const keys: string[] = [];
+  menus.forEach((menu) => {
+    if (menu.children && menu.children.length > 0) {
+      keys.push(menu.code);
+    }
+  });
+  return keys;
+};
 
 export default function MemberLayout() {
   const navigate = useNavigate();
   const location = useLocation();
   const { member, logout, isAuthenticated } = useAuthStore();
   const { profile, fetchProfile } = useMemberStore();
+  const [menuItems, setMenuItems] = useState<any[]>([]);
+  const [defaultOpenKeys, setDefaultOpenKeys] = useState<string[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -30,6 +74,29 @@ export default function MemberLayout() {
     }
     fetchProfile();
   }, [isAuthenticated, navigate, fetchProfile]);
+
+  // 获取菜单数据
+  useEffect(() => {
+    const fetchMenus = async () => {
+      try {
+        setLoading(true);
+        const response = await menuService.getUserMenus();
+        if (response.code === 200 && response.data) {
+          const convertedMenus = convertMenuData(response.data);
+          setMenuItems(convertedMenus);
+          setDefaultOpenKeys(getDefaultOpenKeys(response.data));
+        }
+      } catch (error) {
+        console.error('获取菜单失败:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (isAuthenticated) {
+      fetchMenus();
+    }
+  }, [isAuthenticated]);
 
   const handleLogout = async () => {
     await logout();
@@ -48,53 +115,6 @@ export default function MemberLayout() {
       icon: <LogoutOutlined />,
       label: '退出登录',
       onClick: handleLogout,
-    },
-  ];
-
-  const menuItems = [
-    {
-      key: '/member',
-      icon: <HomeOutlined />,
-      label: <Link to="/member">会员首页</Link>,
-    },
-    {
-      key: '/member/profile',
-      icon: <UserOutlined />,
-      label: <Link to="/member/profile">个人信息</Link>,
-    },
-    {
-      key: 'recharge',
-      icon: <PayCircleOutlined />,
-      label: '充值中心',
-      children: [
-        {
-          key: '/recharge/balance',
-          icon: <WalletOutlined />,
-          label: <Link to="/recharge/balance">余额充值</Link>,
-        },
-        {
-          key: '/recharge/score',
-          icon: <GiftOutlined />,
-          label: <Link to="/recharge/score">积分充值</Link>,
-        },
-      ],
-    },
-    {
-      key: 'records',
-      icon: <HistoryOutlined />,
-      label: '交易记录',
-      children: [
-        {
-          key: '/member/records/balance',
-          icon: <WalletOutlined />,
-          label: <Link to="/member/records/balance">余额记录</Link>,
-        },
-        {
-          key: '/member/records/score',
-          icon: <GiftOutlined />,
-          label: <Link to="/member/records/score">积分记录</Link>,
-        },
-      ],
     },
   ];
 
@@ -140,13 +160,19 @@ export default function MemberLayout() {
       
       <Layout>
         <Sider width={200} className="bg-white">
-          <Menu
-            mode="inline"
-            selectedKeys={[currentPath]}
-            defaultOpenKeys={['recharge', 'records']}
-            style={{ height: '100%', borderRight: 0 }}
-            items={menuItems}
-          />
+          {loading ? (
+            <div className="flex justify-center items-center h-32">
+              <Spin size="small" />
+            </div>
+          ) : (
+            <Menu
+              mode="inline"
+              selectedKeys={[currentPath]}
+              defaultOpenKeys={defaultOpenKeys}
+              style={{ height: '100%', borderRight: 0 }}
+              items={menuItems}
+            />
+          )}
         </Sider>
         
         <Content className="p-6 bg-gray-50">

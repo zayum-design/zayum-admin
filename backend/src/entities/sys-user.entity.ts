@@ -11,13 +11,8 @@ import {
 import { SysUserGroup } from './sys-user-group.entity';
 
 @Entity('sys_user')
-@Index('idx_username', ['username'], { unique: true })
-@Index('idx_email', ['email'], { unique: true })
-@Index('idx_mobile', ['mobile'], { unique: true })
-@Index('idx_group_id', ['groupId'])
-@Index('idx_status', ['status'])
 export class SysUser {
-  @PrimaryGeneratedColumn('increment', { type: 'bigint' })
+  @PrimaryGeneratedColumn()
   id: number;
 
   @Column({ type: 'bigint', default: 1, name: 'group_id' })

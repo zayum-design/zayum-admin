@@ -269,6 +269,24 @@ coverage/
 .nyc_output/
 *.lcov
 
+# Test environment files
+backend/.env.test
+backend/.env.test.*
+
+# Test documentation (old)
+backend/README.test.md
+
+# Note: backend/test/ directory is now tracked by git
+# Test files should be committed for shared testing framework
+
+# Test coverage directories
+backend/coverage*/
+backend/.nyc_output/
+
+# Test results and reports
+backend/test-results/
+backend/test-reports/
+
 # ==========================================
 # Temporary files
 # ==========================================
@@ -284,9 +302,14 @@ temp/
 development-guide/
 development-guide-web/
 development-guide-ios/
+development-guide-plugin/
 
 # Claude
 .claude
 # me
 me.md
 issues/
+
+
+plugin-market/
+plugins/

@@ -7,12 +7,8 @@ import {
 } from 'typeorm';
 
 @Entity('sys_upload')
-@Index('idx_user_type', ['userType'])
-@Index('idx_user_id', ['userId'])
-@Index('idx_category', ['category'])
-@Index('idx_created_at', ['createdAt'])
 export class SysUpload {
-  @PrimaryGeneratedColumn('increment', { type: 'bigint' })
+  @PrimaryGeneratedColumn()
   id: number;
 
   @Column({ type: 'varchar', length: 20, name: 'user_type' })

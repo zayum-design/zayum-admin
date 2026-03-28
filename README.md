@@ -105,10 +105,19 @@ zayum-admin/
 │   │   ├── services/      # API服务
 │   │   └── utils/         # 工具函数
 │   └── package.json
-├── cli/                    # AI CLI 代码生成器
-│   ├── src/               # CLI 源码
+├── cli/                    # 插件管理 CLI 工具
 │   ├── bin/               # 可执行文件
+│   ├── src/               # CLI 源码
+│   │   ├── commands/      # 命令实现
+│   │   ├── utils/         # 工具函数
+│   │   └── types/         # 类型定义
+│   ├── README.md          # CLI 使用文档
 │   └── package.json
+├── plugins/                # 插件目录
+│   └── schedule/          # 定时任务插件示例
+│       ├── plugin.json    # 插件配置
+│       ├── backend/       # 插件后端代码
+│       └── frontend/      # 插件前端代码
 ├── app/                    # 客户端应用
 │   ├── web/               # Web 应用（会员端）
 │   │   ├── src/
@@ -122,10 +131,19 @@ zayum-admin/
 │   │   └── package.json
 │   └── ios/               # iOS 原生应用
 │       └── ZayumMember/   # iOS 项目
-├── development-guide/      # 后端开发指南文档
-├── development-guide-web/  # Web App 开发指南文档
-├── development-guide-ios/  # iOS App 开发指南文档
-└── README.md              # 项目说明文档
+├── development-guide/          # 后端开发指南文档
+├── development-guide-web/      # Web App 开发指南文档
+├── development-guide-ios/      # iOS App 开发指南文档
+├── development-guide-plugin/   # 插件系统开发文档
+├── plugin-market/              # 插件市场服务（可选）
+│   ├── src/
+│   │   ├── controllers/        # 市场 API 控制器
+│   │   ├── services/           # 市场服务
+│   │   ├── entities/           # 数据库实体
+│   │   └── main.ts             # 服务入口
+│   ├── uploads/                # 插件包存储目录
+│   └── package.json
+└── README.md                   # 项目说明文档
 ```
 
 ## 🚀 快速开始
@@ -278,19 +296,8 @@ npm run seed
 - **用户名**：admin
 - **密码**：Admin@888888
 
-## 🤖 AI CLI 代码生成器
+## 🤖 AI 代码生成器
 
-项目内置了 AI 驱动的 CLI 工具，支持对话式代码生成和智能代码管理：
-
-### 安装与启动
-```bash
-# 安装 CLI 依赖
-cd cli && npm install && npm run build
-
-# 启动 AI 交互模式
-cd ..
-./zayum ai
-```
 
 ### 功能特性
 - **智能对话**：自然语言描述需求，AI 引导完成开发
@@ -321,6 +328,148 @@ cd ..
 3. 选择生成选项（后端/前端/菜单）
 4. 预览并确认生成的代码
 5. 保存代码到项目或直接下载
+
+## 🔌 插件系统
+
+Zayum Admin 支持通过插件机制动态扩展系统功能，使用 CLI 工具可以轻松安装、卸载、启用和禁用插件。
+
+### 功能特性
+- **动态安装/卸载**：通过 CLI 一键安装或卸载插件
+- **数据库迁移**：安装时自动执行迁移，卸载时自动回滚
+- **菜单注入**：自动注册前端菜单和权限点
+- **前后端分离**：插件可包含后端模块和前端组件
+- **钩子机制**：支持登录/注册钩子扩展
+
+### 插件市场
+
+Zayum 支持从远端插件市场安装插件，也可以配置多个插件源（官方市场、私有仓库等）。
+
+#### 管理插件源
+
+```bash
+# 列出所有插件源
+zayum source:list
+
+# 添加插件源
+zayum source:add private https://plugins.mycompany.com --token xxx
+
+# 设置默认源
+zayum source:default private
+
+# 启用/禁用源
+zayum source:enable private
+zayum source:disable private
+```
+
+#### 搜索和安装插件
+
+```bash
+# 搜索插件
+zayum plugin:search schedule
+zayum plugin:search cron --source official
+
+# 从市场安装插件（最新版本）
+zayum plugin:install schedule
+zayum plugin:install schedule --enable
+
+# 安装指定版本
+zayum plugin:install schedule --version 1.2.0
+
+# 从指定源安装
+zayum plugin:install schedule --source official
+
+# 从 URL 安装
+zayum plugin:install https://example.com/schedule@1.0.0.zip --url
+
+# 从本地安装
+zayum plugin:install ./plugins/schedule --local
+```
+
+#### 更新插件
+
+```bash
+# 检查更新
+zayum plugin:list
+
+# 更新到最新版本
+zayum plugin:update schedule
+
+# 更新到指定版本
+zayum plugin:update schedule --version 1.2.0
+```
+
+#### 插件管理
+
+```bash
+# 列出已安装插件
+zayum plugin:list
+zayum plugin:list --installed
+zayum plugin:list --enabled
+
+# 启用/禁用插件
+zayum plugin:enable schedule
+zayum plugin:disable schedule
+
+# 卸载插件
+zayum plugin:uninstall schedule
+```
+
+### 插件开发
+
+#### 插件目录结构
+```
+my-plugin/
+├── plugin.json           # 插件配置文件
+├── backend/              # 后端代码
+│   └── src/
+│       ├── index.ts      # 模块入口
+│       ├── module.ts     # NestJS 模块
+│       ├── controller.ts
+│       ├── service.ts
+│       ├── entities/     # 数据库实体
+│       └── migrations/   # 迁移文件
+└── frontend/             # 前端代码
+    └── src/
+        ├── index.ts      # 插件入口
+        ├── routes.tsx    # 路由配置
+        └── pages/        # 页面组件
+```
+
+#### plugin.json 示例
+```json
+{
+  "name": "schedule",
+  "version": "1.0.0",
+  "displayName": "定时任务",
+  "description": "系统定时任务管理",
+  "author": "zayum",
+  "backend": {
+    "entry": "dist/backend/index.js",
+    "migrations": ["dist/backend/migrations/*.js"],
+    "entities": ["dist/backend/entities/*.entity.js"]
+  },
+  "frontend": {
+    "entry": "dist/frontend/index.js",
+    "routes": true,
+    "menu": true
+  }
+}
+```
+
+详细开发文档参见 [development-guide-plugin/](development-guide-plugin/)
+
+### 内置示例插件
+
+项目内置了**定时任务**插件作为示例：
+- 支持 Cron 表达式配置
+- 任务启停管理
+- 执行日志记录
+- 可视化任务管理界面
+
+```bash
+# 安装并启用定时任务插件
+zayum plugin:install ./plugins/schedule --enable
+```
 
 ## 📱 Web App 会员中心
 

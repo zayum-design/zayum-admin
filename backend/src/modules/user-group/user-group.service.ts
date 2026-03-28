@@ -1,10 +1,10 @@
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, Like, DataSource } from 'typeorm';
+import { Repository, Like, DataSource, In } from 'typeorm';
 import { SysUserGroup } from '../../entities/sys-user-group.entity';
 import { SysUser } from '../../entities/sys-user.entity';
-import { SysRolePermission } from '../../entities/sys-role-permission.entity';
-import { SysPermission } from '../../entities/sys-permission.entity';
+import { SysUserRolePermission } from '../../entities/sys-user-role-permission.entity';
+import { SysUserPermission } from '../../entities/sys-user-permission.entity';
 import { SysOperationLog } from '../../entities/sys-operation-log.entity';
 import { QueryUserGroupDto } from './dto/query-user-group.dto';
 import { CreateUserGroupDto } from './dto/create-user-group.dto';
@@ -17,10 +17,12 @@ export class UserGroupService {
     private userGroupRepository: Repository<SysUserGroup>,
     @InjectRepository(SysUser)
     private userRepository: Repository<SysUser>,
-    @InjectRepository(SysRolePermission)
-    private rolePermissionRepository: Repository<SysRolePermission>,
-    @InjectRepository(SysPermission)
-    private permissionRepository: Repository<SysPermission>,
+    @InjectRepository(SysUserRolePermission)
+    private userRolePermissionRepository: Repository<SysUserRolePermission>,
+    @InjectRepository(SysUserPermission)
+    private permissionRepository: Repository<SysUserPermission>,
+    @InjectRepository(SysUserPermission)
+    private userPermissionRepository: Repository<SysUserPermission>,
     @InjectRepository(SysOperationLog)
     private operationLogRepository: Repository<SysOperationLog>,
     private dataSource: DataSource,
@@ -73,17 +75,63 @@ export class UserGroupService {
       where: { groupId: id },
     });
 
-    const rolePermissions = await this.rolePermissionRepository.find({
-      where: { roleId: id, roleType: 'user_group' },
-    });
-
-    const permissionIds = rolePermissions.map((rp) => rp.permissionId);
-
-    let permissions: SysPermission[] = [];
-    if (permissionIds.length > 0) {
-      permissions = await this.permissionRepository.findBy({
-        id: permissionIds as any,
+    // 检查permissions字段，优先使用该字段的值
+    let permissionIds: number[] = [];
+    let permissions: SysUserPermission[] = [];
+    try {
+      if (group.permissions) {
+        const permsJson = JSON.parse(group.permissions);
+        if (Array.isArray(permsJson)) {
+          if (permsJson.includes('*')) {
+            // 拥有所有权限，返回所有权限
+            permissions = await this.permissionRepository.find({
+              where: { status: 'normal' },
+            });
+            permissionIds = permissions.map((p) => p.id);
+          } else {
+            // 是数字数组，直接使用这些权限ID
+            permissionIds = permsJson.filter((id): id is number => 
+              typeof id === 'number' && !isNaN(id)
+            );
+            if (permissionIds.length > 0) {
+              permissions = await this.permissionRepository.find({
+                where: {
+                  id: In(permissionIds),
+                },
+              });
+            }
+          }
+        }
+      }
+      
+      // 如果permissions字段没有提供有效的权限ID，则从关联表查询
+      if (permissionIds.length === 0) {
+        const userRolePermissions = await this.userRolePermissionRepository.find({
+          where: { userGroupId: id },
+        });
+        permissionIds = userRolePermissions.map((rp) => rp.permissionId);
+        if (permissionIds.length > 0) {
+          permissions = await this.permissionRepository.find({
+            where: {
+              id: In(permissionIds),
+            },
+          });
+        }
+      }
+    } catch (error) {
+      console.error('解析permissions字段失败:', error);
+      // 如果解析失败，回退到从关联表查询
+      const userRolePermissions = await this.userRolePermissionRepository.find({
+        where: { userGroupId: id },
       });
+      permissionIds = userRolePermissions.map((rp) => rp.permissionId);
+      if (permissionIds.length > 0) {
+        permissions = await this.permissionRepository.find({
+          where: {
+            id: In(permissionIds),
+          },
+        });
+      }
     }
 
     return {
@@ -178,7 +226,13 @@ export class UserGroupService {
     await queryRunner.startTransaction();
 
     try {
-      await queryRunner.manager.delete(SysRolePermission, {
+      // 删除sys_user_role_permission表中的记录
+      await queryRunner.manager.delete(SysUserRolePermission, {
+        userGroupId: id,
+      });
+
+      // 删除sys_role_permission表中的记录（保持兼容性）
+      await queryRunner.manager.delete(SysUserRolePermission, {
         roleId: id,
         roleType: 'user_group',
       });
@@ -214,16 +268,50 @@ export class UserGroupService {
       throw new NotFoundException('用户组不存在');
     }
 
-    const rolePermissions = await this.rolePermissionRepository.find({
-      where: { roleId: id, roleType: 'user_group' },
-    });
+    // 检查permissions字段，优先使用该字段的值
+    let permissionIds: number[] = [];
+    try {
+      if (group.permissions) {
+        const permsJson = JSON.parse(group.permissions);
+        if (Array.isArray(permsJson)) {
+          if (permsJson.includes('*')) {
+            // 拥有所有权限，返回所有用户权限ID
+            const allPermissions = await this.userPermissionRepository.find({
+              where: { status: 'normal' },
+              select: ['id'],
+            });
+            permissionIds = allPermissions.map((p) => p.id);
+          } else {
+            // 是数字数组，直接使用
+            permissionIds = permsJson.filter((id): id is number => 
+              typeof id === 'number' && !isNaN(id)
+            );
+          }
+        }
+      }
+      
+      // 如果permissions字段没有提供有效的权限ID，则从关联表查询
+      if (permissionIds.length === 0) {
+        const userRolePermissions = await this.userRolePermissionRepository.find({
+          where: { userGroupId: id },
+        });
+        permissionIds = userRolePermissions.map((rp) => rp.permissionId);
+      }
+    } catch (error) {
+      console.error('解析permissions字段失败:', error);
+      // 如果解析失败，回退到从关联表查询
+      const userRolePermissions = await this.userRolePermissionRepository.find({
+        where: { userGroupId: id },
+      });
+      permissionIds = userRolePermissions.map((rp) => rp.permissionId);
+    }
 
-    const permissionIds = rolePermissions.map((rp) => rp.permissionId);
-
-    let permissions: SysPermission[] = [];
+    let permissions: SysUserPermission[] = [];
     if (permissionIds.length > 0) {
-      permissions = await this.permissionRepository.findBy({
-        id: permissionIds as any,
+      permissions = await this.userPermissionRepository.find({
+        where: {
+          id: In(permissionIds),
+        },
       });
     }
 
@@ -244,12 +332,33 @@ export class UserGroupService {
       throw new NotFoundException('用户组不存在');
     }
 
+    // 获取所有有效的用户权限ID
+    const allPermissions = await this.userPermissionRepository.find({
+      where: { status: 'normal' },
+      select: ['id'],
+    });
+    const allPermissionIds = allPermissions.map(p => p.id);
+    
+    // 检查是否选择了所有权限（即所有权限ID都包含在内）
+    const isAllPermissions = allPermissionIds.length > 0 && 
+                            permissionIds.length === allPermissionIds.length &&
+                            permissionIds.every(id => allPermissionIds.includes(id)) &&
+                            allPermissionIds.every(id => permissionIds.includes(id));
+    
+    // 过滤掉不存在的权限ID - 使用SysUserPermission表（用户权限表）
+    let validPermissionIds: number[] = [];
     if (permissionIds.length > 0) {
-      const existingPermissions = await this.permissionRepository.findBy({
-        id: permissionIds as any,
+      const existingPermissions = await this.userPermissionRepository.find({
+        where: {
+          id: In(permissionIds),
+        },
       });
-      if (existingPermissions.length !== permissionIds.length) {
-        throw new BadRequestException('部分权限ID不存在');
+      validPermissionIds = existingPermissions.map(p => p.id);
+      
+      // 如果有不存在的权限ID，记录日志但不抛出异常
+      if (validPermissionIds.length !== permissionIds.length) {
+        const missingIds = permissionIds.filter(id => !validPermissionIds.includes(id));
+        console.warn(`部分用户权限ID不存在，将被忽略: ${missingIds.join(', ')}`);
       }
     }
 
@@ -258,21 +367,48 @@ export class UserGroupService {
     await queryRunner.startTransaction();
 
     try {
-      await queryRunner.manager.delete(SysRolePermission, {
+      // 删除sys_user_role_permission表中的旧记录
+      await queryRunner.manager.delete(SysUserRolePermission, {
+        userGroupId: id,
+      });
+
+      // 删除sys_role_permission表中的旧记录（保持兼容性）
+      await queryRunner.manager.delete(SysUserRolePermission, {
         roleId: id,
         roleType: 'user_group',
       });
 
-      if (permissionIds.length > 0) {
-        const rolePermissions = permissionIds.map((permissionId) => {
-          const rp = new SysRolePermission();
-          rp.roleId = id;
+      // 如果拥有所有权限，permissions字段存储["*"]，不在关联表中存储所有记录
+      if (isAllPermissions) {
+        // 权限字段存储["*"]表示拥有所有权限
+        group.permissions = JSON.stringify(['*']);
+      } else if (validPermissionIds.length > 0) {
+        // 在sys_user_role_permission表中创建新记录
+        const userRolePermissions = validPermissionIds.map((permissionId) => {
+          const urp = new SysUserRolePermission();
+          urp.userGroupId = id;
+          urp.permissionId = permissionId;
+          return urp;
+        });
+        await queryRunner.manager.save(userRolePermissions);
+
+        // 同时在sys_role_permission表中创建记录（保持兼容性）
+        const rolePermissions = validPermissionIds.map((permissionId) => {
+          const rp = new SysUserRolePermission();
+          rp.userGroupId = id;
           rp.permissionId = permissionId;
-          rp.roleType = 'user_group';
           return rp;
         });
         await queryRunner.manager.save(rolePermissions);
+        
+        // 更新用户组表的permissions字段（存储JSON格式的权限ID数组）
+        group.permissions = JSON.stringify(validPermissionIds);
+      } else {
+        // 没有选择任何权限
+        group.permissions = JSON.stringify([]);
       }
+      
+      await queryRunner.manager.save(group);
 
       await queryRunner.commitTransaction();
 

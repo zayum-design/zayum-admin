@@ -1,12 +1,12 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, In } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { SysAdmin } from '../../entities/sys-admin.entity';
 import { SysLoginLog } from '../../entities/sys-login-log.entity';
-import { SysRolePermission } from '../../entities/sys-role-permission.entity';
-import { SysPermission } from '../../entities/sys-permission.entity';
+import { SysAdminRolePermission } from '../../entities/sys-admin-role-permission.entity';
+import { SysAdminPermission } from '../../entities/sys-admin-permission.entity';
 import { LoginDto } from './dto/login.dto';
 
 @Injectable()
@@ -16,10 +16,10 @@ export class AuthService {
     private adminRepository: Repository<SysAdmin>,
     @InjectRepository(SysLoginLog)
     private loginLogRepository: Repository<SysLoginLog>,
-    @InjectRepository(SysRolePermission)
-    private rolePermissionRepository: Repository<SysRolePermission>,
-    @InjectRepository(SysPermission)
-    private permissionRepository: Repository<SysPermission>,
+    @InjectRepository(SysAdminRolePermission)
+    private rolePermissionRepository: Repository<SysAdminRolePermission>,
+    @InjectRepository(SysAdminPermission)
+    private permissionRepository: Repository<SysAdminPermission>,
     private jwtService: JwtService,
   ) {}
 
@@ -172,7 +172,11 @@ export class AuthService {
       return { permissions: [], codes: [] };
     }
 
-    const permissions = await this.permissionRepository.findByIds(permissionIds);
+    const permissions = await this.permissionRepository.find({
+      where: {
+        id: In(permissionIds),
+      },
+    });
     return {
       permissions,
       codes: permissions.map((p) => p.code),
@@ -195,26 +199,56 @@ export class AuthService {
     return this.buildMenuTree(menus);
   }
 
-  private buildMenuTree(menus: SysPermission[]): any[] {
+  private buildMenuTree(menus: SysAdminPermission[]): any[] {
     const map = new Map<number, any>();
     const roots: any[] = [];
 
+    // 第一步：创建所有节点的映射
     menus.forEach((m) => {
       map.set(m.id, { ...m, children: [] });
     });
 
+    // 第二步：构建树形结构
     menus.forEach((m) => {
       const node = map.get(m.id);
-      if (m.parentId === 0 || !map.has(m.parentId)) {
+      // 安全地处理 parentId，可能是数字、字符串或 null/undefined
+      const parentId = m.parentId ? Number(m.parentId) : 0;
+      
+      if (parentId === 0) {
+        // 根节点
         roots.push(node);
       } else {
-        const parent = map.get(m.parentId);
+        const parent = map.get(parentId);
         if (parent) {
           parent.children.push(node);
+        } else {
+          // 如果父节点不存在，也作为根节点处理
+          roots.push(node);
         }
       }
     });
 
-    return roots;
+    // 第三步：按 sort 字段排序
+    const sortNodes = (nodes: any[]) => {
+      return nodes.sort((a, b) => {
+        if (a.sort !== b.sort) {
+          return a.sort - b.sort;
+        }
+        return a.id - b.id;
+      });
+    };
+
+    // 递归排序所有子节点
+    const sortTree = (nodes: any[]) => {
+      const sorted = sortNodes(nodes);
+      sorted.forEach(node => {
+        if (node.children && node.children.length > 0) {
+          node.children = sortTree(node.children);
+        }
+      });
+      return sorted;
+    };
+
+    return sortTree(roots);
   }
 }

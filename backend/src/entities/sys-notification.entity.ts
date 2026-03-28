@@ -7,12 +7,8 @@ import {
 } from 'typeorm';
 
 @Entity('sys_notification')
-@Index('idx_user_type', ['userType'])
-@Index('idx_user_id', ['userId'])
-@Index('idx_is_read', ['isRead'])
-@Index('idx_created_at', ['createdAt'])
 export class SysNotification {
-  @PrimaryGeneratedColumn('increment', { type: 'bigint' })
+  @PrimaryGeneratedColumn()
   id: number;
 
   @Column({ type: 'varchar', length: 20, name: 'user_type' })

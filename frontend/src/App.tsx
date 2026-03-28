@@ -7,7 +7,7 @@ import AuthGuard from './components/AuthGuard';
 import MainLayout from './layouts/MainLayout';
 import LoginPage from './pages/login';
 import DashboardPage from './pages/dashboard';
-import PermissionManagement from './pages/system/permission';
+import PermissionManagement from './pages/system/admin-permission';
 import AdminManagement from './pages/system/admin';
 import AdminGroupManagement from './pages/system/admin-group';
 import UserManagement from './pages/user/list';
@@ -18,9 +18,11 @@ import ConfigManagement from './pages/system/config';
 import FileManagement from './pages/system/file';
 import NotificationList from './pages/message/list';
 import ProfilePage from './pages/profile';
-import UserScorePage from './pages/user-score';
-import UserBalancePage from './pages/user-balance';
+import UserScorePage from './pages/user/score';
+import UserBalancePage from './pages/user/balance';
 import CodeGeneratorPage from './pages/code-generator';
+import SysUserPermissionPage from './pages/user/permission';
+import SysUserOrderPage from './pages/user/order';
 
 function App() {
   return (
@@ -63,6 +65,8 @@ function App() {
               <Route path="message/list" element={<NotificationList />} />
               <Route path="profile" element={<ProfilePage />} />
               <Route path="code-generator" element={<CodeGeneratorPage />} />
+                            <Route path="user-permission" element={<SysUserPermissionPage />} />
+                            <Route path="user-order" element={<SysUserOrderPage />} />
               </Route>
           </Routes>
         </BrowserRouter>

@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, Like } from 'typeorm';
+import { Repository, Like, In } from 'typeorm';
 import * as fs from 'fs';
 import * as path from 'path';
 import { SysUpload } from '../../entities/sys-upload.entity';
@@ -91,7 +91,11 @@ export class UploadService {
   }
 
   async batchRemove(ids: number[]) {
-    const uploads = await this.uploadRepository.findBy({ id: ids as any });
+    const uploads = await this.uploadRepository.find({
+      where: {
+        id: In(ids),
+      },
+    });
     for (const upload of uploads) {
       const fullPath = path.join(process.cwd(), upload.filepath);
       if (fs.existsSync(fullPath)) {

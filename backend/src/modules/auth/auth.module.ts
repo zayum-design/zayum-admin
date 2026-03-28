@@ -10,8 +10,8 @@ import { LocalStrategy } from './strategies/local.strategy';
 import { PermissionsGuard } from './guards/permissions.guard';
 import { SysAdmin } from '../../entities/sys-admin.entity';
 import { SysLoginLog } from '../../entities/sys-login-log.entity';
-import { SysRolePermission } from '../../entities/sys-role-permission.entity';
-import { SysPermission } from '../../entities/sys-permission.entity';
+import { SysAdminRolePermission } from '../../entities/sys-admin-role-permission.entity';
+import { SysAdminPermission } from '../../entities/sys-admin-permission.entity';
 
 @Module({
   imports: [
@@ -26,7 +26,7 @@ import { SysPermission } from '../../entities/sys-permission.entity';
       }),
       inject: [ConfigService],
     }),
-    TypeOrmModule.forFeature([SysAdmin, SysLoginLog, SysRolePermission, SysPermission]),
+    TypeOrmModule.forFeature([SysAdmin, SysLoginLog, SysAdminRolePermission, SysAdminPermission]),
   ],
   controllers: [AuthController],
   providers: [AuthService, JwtStrategy, LocalStrategy, PermissionsGuard],

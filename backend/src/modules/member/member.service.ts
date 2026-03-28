@@ -7,6 +7,7 @@ import { SysUser } from '../../entities/sys-user.entity';
 import { SmsCode } from '../../entities/sms-code.entity';
 import { SysUserBalanceEntity } from '../../entities/sys-user-balance.entity';
 import { SysUserScoreEntity } from '../../entities/sys-user-score.entity';
+import { SysUserPermission } from '../../entities/sys-user-permission.entity';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
 import { SendSmsCodeDto } from './dto/send-sms-code.dto';
@@ -25,6 +26,8 @@ export class MemberService {
     private userBalanceRepository: Repository<SysUserBalanceEntity>,
     @InjectRepository(SysUserScoreEntity)
     private userScoreRepository: Repository<SysUserScoreEntity>,
+    @InjectRepository(SysUserPermission)
+    private userPermissionRepository: Repository<SysUserPermission>,
     private jwtService: JwtService,
   ) {}
 
@@ -383,5 +386,83 @@ export class MemberService {
       remark: record.remark,
       createdAt: record.created_at,
     }));
+  }
+
+  // 获取用户菜单树
+  async getUserMenus() {
+    const permissions = await this.userPermissionRepository.find({
+      where: { type: 'menu', status: 'normal' },
+      order: { sort: 'ASC', id: 'ASC' },
+    });
+    return this.buildMenuTree(permissions);
+  }
+
+  // 构建菜单树
+  private buildMenuTree(permissions: SysUserPermission[]): any[] {
+    console.log('buildMenuTree called with permissions:', permissions.length);
+    const map = new Map<number, any>();
+    const roots: any[] = [];
+
+    permissions.forEach((p) => {
+      console.log(`Permission id=${p.id}, parent_id=${p.parent_id}, type=${typeof p.parent_id}, name=${p.name}`);
+      // 确保 parentId 是数字类型
+      const parentId = typeof p.parent_id === 'string' ? parseInt(p.parent_id, 10) : p.parent_id;
+      map.set(p.id, {
+        id: p.id,
+        name: p.name,
+        code: p.code,
+        path: p.path,
+        icon: p.icon,
+        parentId: parentId, // 存储转换后的数字
+        sort: p.sort,
+        children: [],
+      });
+    });
+
+    permissions.forEach((p) => {
+      const node = map.get(p.id);
+      const parentId = node.parentId; // 使用已经转换的 parentId
+      console.log(`Processing id=${p.id}, parent_id=${p.parent_id}, parentId=${parentId}, map.has(${parentId})=${map.has(parentId)}`);
+      if (parentId === 0 || !map.has(parentId)) {
+        roots.push(node);
+        console.log(`  -> Added to roots (parentId=${parentId})`);
+      } else {
+        const parent = map.get(parentId);
+        if (parent) {
+          parent.children.push(node);
+          console.log(`  -> Added as child of ${parentId} (${parent.name})`);
+        }
+      }
+    });
+
+    console.log(`Total roots: ${roots.length}`);
+    roots.forEach(root => {
+      console.log(`Root id=${root.id}, name=${root.name}, children=${root.children.length}`);
+    });
+
+    // 对根节点按 sort 排序
+    roots.sort((a, b) => {
+      if (a.sort !== b.sort) {
+        return (a.sort || 0) - (b.sort || 0);
+      }
+      return a.id - b.id;
+    });
+
+    // 对每个节点的子节点也排序
+    const sortChildren = (node: any) => {
+      if (node.children && node.children.length > 0) {
+        node.children.sort((a: any, b: any) => {
+          if (a.sort !== b.sort) {
+            return (a.sort || 0) - (b.sort || 0);
+          }
+          return a.id - b.id;
+        });
+        node.children.forEach(sortChildren);
+      }
+    };
+
+    roots.forEach(sortChildren);
+
+    return roots;
   }
 }

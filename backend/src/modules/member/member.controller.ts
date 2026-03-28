@@ -155,4 +155,16 @@ export class MemberController {
       data: null,
     };
   }
+
+  // 获取用户菜单
+  @UseGuards(JwtAuthGuard)
+  @Get('menus')
+  async getUserMenus() {
+    const menus = await this.memberService.getUserMenus();
+    return {
+      code: 200,
+      message: 'success',
+      data: menus,
+    };
+  }
 }

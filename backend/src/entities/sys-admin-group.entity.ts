@@ -10,10 +10,8 @@ import {
 import { SysAdmin } from './sys-admin.entity';
 
 @Entity('sys_admin_group')
-@Index('idx_name', ['name'], { unique: true })
-@Index('idx_status', ['status'])
 export class SysAdminGroup {
-  @PrimaryGeneratedColumn('increment', { type: 'bigint' })
+  @PrimaryGeneratedColumn()
   id: number;
 
   @Column({ type: 'varchar', length: 50, unique: true })

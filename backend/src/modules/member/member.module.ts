@@ -8,10 +8,11 @@ import { SysUser } from '../../entities/sys-user.entity';
 import { SmsCode } from '../../entities/sms-code.entity';
 import { SysUserBalanceEntity } from '../../entities/sys-user-balance.entity';
 import { SysUserScoreEntity } from '../../entities/sys-user-score.entity';
+import { SysUserPermission } from '../../entities/sys-user-permission.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([SysUser, SmsCode, SysUserBalanceEntity, SysUserScoreEntity]),
+    TypeOrmModule.forFeature([SysUser, SmsCode, SysUserBalanceEntity, SysUserScoreEntity, SysUserPermission]),
     JwtModule.registerAsync({
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({

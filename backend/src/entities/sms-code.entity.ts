@@ -7,9 +7,8 @@ import {
 } from 'typeorm';
 
 @Entity('sms_code')
-@Index(['mobile', 'type', 'used'])
 export class SmsCode {
-  @PrimaryGeneratedColumn('increment', { type: 'bigint' })
+  @PrimaryGeneratedColumn()
   id: number;
 
   @Column({ type: 'varchar', length: 11, name: 'mobile' })

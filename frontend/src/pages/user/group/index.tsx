@@ -15,6 +15,7 @@ import {
 } from 'antd';
 import type { DataNode } from 'antd/es/tree';
 import { userGroupService } from '../../../services/user-group.service';
+import { userPermissionService } from '../../../services/user-permission.service';
 import type { QueryUserGroupDTO, CreateUserGroupDTO, UpdateUserGroupDTO, UserGroupItem } from '../../../services/user-group.service';
 import { usePermissionStore } from '../../../store/permission.store';
 import request from '../../../services/request';
@@ -135,7 +136,7 @@ export default function UserGroupManagement() {
     setCurrentGroupId(record.id);
     setPermissionDrawerVisible(true);
     try {
-      const permResponse = await request.get<any>('/api/admin/permissions/tree');
+      const permResponse = await userPermissionService.getTree();
       setAllPermissions(permResponse.data || []);
 
       const groupPermResponse = await userGroupService.getPermissions(record.id);

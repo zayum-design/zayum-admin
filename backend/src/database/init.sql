@@ -75,8 +75,8 @@ CREATE INDEX "idx_sys_user_mobile" ON "sys_user" ("mobile");
 CREATE INDEX "idx_sys_user_group_id" ON "sys_user" ("group_id");
 CREATE INDEX "idx_sys_user_status" ON "sys_user" ("status");
 
--- 权限表
-CREATE TABLE "sys_permission" (
+-- 权限表（后台管理）
+CREATE TABLE "sys_admin_permission" (
     "id" BIGSERIAL NOT NULL,
     "parent_id" BIGINT NOT NULL DEFAULT 0,
     "name" VARCHAR(50) NOT NULL,
@@ -89,25 +89,93 @@ CREATE TABLE "sys_permission" (
     "status" VARCHAR(20) NOT NULL DEFAULT 'normal',
     "created_at" TIMESTAMP NOT NULL DEFAULT NOW(),
     "updated_at" TIMESTAMP NOT NULL DEFAULT NOW(),
-    CONSTRAINT "PK_sys_permission" PRIMARY KEY ("id")
+    CONSTRAINT "PK_sys_admin_permission" PRIMARY KEY ("id")
 );
-CREATE INDEX "idx_sys_permission_code" ON "sys_permission" ("code");
-CREATE INDEX "idx_sys_permission_parent_id" ON "sys_permission" ("parent_id");
-CREATE INDEX "idx_sys_permission_status" ON "sys_permission" ("status");
+CREATE INDEX "idx_sys_admin_permission_code" ON "sys_admin_permission" ("code");
+CREATE INDEX "idx_sys_admin_permission_parent_id" ON "sys_admin_permission" ("parent_id");
+CREATE INDEX "idx_sys_admin_permission_status" ON "sys_admin_permission" ("status");
 
--- 角色权限关联表
-CREATE TABLE "sys_role_permission" (
+-- 角色权限关联表（后台管理）
+CREATE TABLE "sys_admin_role_permission" (
     "id" BIGSERIAL NOT NULL,
     "role_type" VARCHAR(20) NOT NULL,
     "role_id" BIGINT NOT NULL,
     "permission_id" BIGINT NOT NULL,
     "created_at" TIMESTAMP NOT NULL DEFAULT NOW(),
-    CONSTRAINT "PK_sys_role_permission" PRIMARY KEY ("id"),
-    CONSTRAINT "UQ_sys_role_permission" UNIQUE ("role_type", "role_id", "permission_id")
+    CONSTRAINT "PK_sys_admin_role_permission" PRIMARY KEY ("id"),
+    CONSTRAINT "UQ_sys_admin_role_permission" UNIQUE ("role_type", "role_id", "permission_id")
 );
-CREATE INDEX "idx_sys_role_permission_role_type" ON "sys_role_permission" ("role_type");
-CREATE INDEX "idx_sys_role_permission_role_id" ON "sys_role_permission" ("role_id");
-CREATE INDEX "idx_sys_role_permission_permission_id" ON "sys_role_permission" ("permission_id");
+CREATE INDEX "idx_sys_admin_role_permission_role_type" ON "sys_admin_role_permission" ("role_type");
+CREATE INDEX "idx_sys_admin_role_permission_role_id" ON "sys_admin_role_permission" ("role_id");
+CREATE INDEX "idx_sys_admin_role_permission_permission_id" ON "sys_admin_role_permission" ("permission_id");
+
+-- ==================== 用户权限表（app/web 会员中心） ====================
+-- 用途：管理 app/web 会员中心的菜单和按钮权限
+CREATE TABLE "sys_user_permission" (
+    "id" BIGSERIAL NOT NULL,
+    "parent_id" BIGINT NOT NULL DEFAULT 0,
+    "name" VARCHAR(50) NOT NULL,
+    "code" VARCHAR(100) NOT NULL UNIQUE,
+    "type" VARCHAR(20) DEFAULT 'menu',
+    "path" VARCHAR(200),
+    "icon" VARCHAR(50),
+    "component" VARCHAR(200),
+    "sort" INT DEFAULT 0,
+    "status" VARCHAR(20) NOT NULL DEFAULT 'normal',
+    "description" VARCHAR(255),
+    "created_at" TIMESTAMP NOT NULL DEFAULT NOW(),
+    "updated_at" TIMESTAMP NOT NULL DEFAULT NOW(),
+    CONSTRAINT "PK_sys_user_permission" PRIMARY KEY ("id")
+);
+CREATE INDEX "idx_sys_user_permission_code" ON "sys_user_permission" ("code");
+CREATE INDEX "idx_sys_user_permission_parent_id" ON "sys_user_permission" ("parent_id");
+CREATE INDEX "idx_sys_user_permission_status" ON "sys_user_permission" ("status");
+CREATE INDEX "idx_sys_user_permission_type" ON "sys_user_permission" ("type");
+
+-- 用户组权限关联表（app/web 会员中心）
+CREATE TABLE "sys_user_role_permission" (
+    "id" BIGSERIAL NOT NULL,
+    "user_group_id" BIGINT NOT NULL,
+    "permission_id" BIGINT NOT NULL,
+    "created_at" TIMESTAMP NOT NULL DEFAULT NOW(),
+    CONSTRAINT "PK_sys_user_role_permission" PRIMARY KEY ("id"),
+    CONSTRAINT "UQ_sys_user_role_permission" UNIQUE ("user_group_id", "permission_id")
+);
+CREATE INDEX "idx_sys_user_role_permission_group" ON "sys_user_role_permission" ("user_group_id");
+CREATE INDEX "idx_sys_user_role_permission_perm" ON "sys_user_role_permission" ("permission_id");
+
+-- ==================== 用户订单表 ====================
+CREATE TABLE "sys_user_order" (
+    "id" BIGSERIAL NOT NULL,
+    "user_id" BIGINT NOT NULL,
+    "order_no" VARCHAR(100) NOT NULL UNIQUE,
+    "order_type" VARCHAR(50) NOT NULL,
+    "amount" DECIMAL(10,2) NOT NULL DEFAULT 0,
+    "pay_amount" DECIMAL(10,2) DEFAULT 0,
+    "currency" VARCHAR(10) DEFAULT 'CNY',
+    "status" VARCHAR(20) NOT NULL DEFAULT 'pending',
+    "pay_method" VARCHAR(50),
+    "pay_trade_no" VARCHAR(100),
+    "pay_data" TEXT,
+    "snapshot" TEXT,
+    "description" VARCHAR(500),
+    "remark" VARCHAR(500),
+    "extra_data" JSONB,
+    "ip" VARCHAR(50),
+    "user_agent" VARCHAR(500),
+    "paid_at" TIMESTAMP,
+    "cancelled_at" TIMESTAMP,
+    "completed_at" TIMESTAMP,
+    "expired_at" TIMESTAMP,
+    "created_at" TIMESTAMP NOT NULL DEFAULT NOW(),
+    "updated_at" TIMESTAMP NOT NULL DEFAULT NOW(),
+    CONSTRAINT "PK_sys_user_order" PRIMARY KEY ("id")
+);
+CREATE INDEX "idx_sys_user_order_user_id" ON "sys_user_order" ("user_id");
+CREATE INDEX "idx_sys_user_order_type" ON "sys_user_order" ("order_type");
+CREATE INDEX "idx_sys_user_order_status" ON "sys_user_order" ("status");
+CREATE INDEX "idx_sys_user_order_created" ON "sys_user_order" ("created_at");
+CREATE INDEX "idx_sys_user_order_paid" ON "sys_user_order" ("paid_at");
 
 -- 操作日志表
 CREATE TABLE "sys_operation_log" (
@@ -267,3 +335,66 @@ CREATE INDEX "idx_sms_code_type" ON "sms_code" ("type");
 CREATE INDEX "idx_sms_code_used" ON "sms_code" ("used");
 CREATE INDEX "idx_sms_code_mobile_type_used" ON "sms_code" ("mobile", "type", "used");
 CREATE INDEX "idx_sms_code_expired_at" ON "sms_code" ("expired_at");
+
+-- ==================== 初始化用户权限数据（app/web 会员中心） ====================
+-- 会员中心默认菜单权限
+-- 先插入父节点
+INSERT INTO "sys_user_permission" ("name", "code", "type", "path", "icon", "sort", "status", "parent_id") VALUES
+('会员首页', 'member:home', 'menu', '/member', 'HomeOutlined', 1, 'normal', 0),
+('个人信息', 'member:profile', 'menu', '/member/profile', 'UserOutlined', 2, 'normal', 0),
+('充值中心', 'recharge:center', 'menu', NULL, 'PayCircleOutlined', 3, 'normal', 0),
+('交易记录', 'records:center', 'menu', NULL, 'HistoryOutlined', 4, 'normal', 0)
+ON CONFLICT ("code") DO NOTHING;
+
+-- 然后插入子节点，使用父节点的ID
+INSERT INTO "sys_user_permission" ("name", "code", "type", "path", "icon", "sort", "status", "parent_id")
+SELECT
+  '余额充值',
+  'recharge:balance',
+  'menu',
+  '/recharge/balance',
+  'WalletOutlined',
+  1,
+  'normal',
+  (SELECT id FROM sys_user_permission WHERE code = 'recharge:center' LIMIT 1)
+WHERE NOT EXISTS (SELECT 1 FROM sys_user_permission WHERE code = 'recharge:balance')
+ON CONFLICT ("code") DO NOTHING;
+
+INSERT INTO "sys_user_permission" ("name", "code", "type", "path", "icon", "sort", "status", "parent_id")
+SELECT
+  '积分充值',
+  'recharge:score',
+  'menu',
+  '/recharge/score',
+  'GiftOutlined',
+  2,
+  'normal',
+  (SELECT id FROM sys_user_permission WHERE code = 'recharge:center' LIMIT 1)
+WHERE NOT EXISTS (SELECT 1 FROM sys_user_permission WHERE code = 'recharge:score')
+ON CONFLICT ("code") DO NOTHING;
+
+INSERT INTO "sys_user_permission" ("name", "code", "type", "path", "icon", "sort", "status", "parent_id")
+SELECT
+  '余额记录',
+  'records:balance',
+  'menu',
+  '/member/records/balance',
+  'WalletOutlined',
+  1,
+  'normal',
+  (SELECT id FROM sys_user_permission WHERE code = 'records:center' LIMIT 1)
+WHERE NOT EXISTS (SELECT 1 FROM sys_user_permission WHERE code = 'records:balance')
+ON CONFLICT ("code") DO NOTHING;
+
+INSERT INTO "sys_user_permission" ("name", "code", "type", "path", "icon", "sort", "status", "parent_id")
+SELECT
+  '积分记录',
+  'records:score',
+  'menu',
+  '/member/records/score',
+  'GiftOutlined',
+  2,
+  'normal',
+  (SELECT id FROM sys_user_permission WHERE code = 'records:center' LIMIT 1)
+WHERE NOT EXISTS (SELECT 1 FROM sys_user_permission WHERE code = 'records:score')
+ON CONFLICT ("code") DO NOTHING;

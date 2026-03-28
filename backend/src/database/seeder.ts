@@ -9,7 +9,9 @@ import { SysAdmin } from '../entities/sys-admin.entity';
 import { SysAdminGroup } from '../entities/sys-admin-group.entity';
 import { SysUser } from '../entities/sys-user.entity';
 import { SysUserGroup } from '../entities/sys-user-group.entity';
-import { SysPermission } from '../entities/sys-permission.entity';
+import { SysAdminPermission } from '../entities/sys-admin-permission.entity';
+import { SysUserPermission } from '../entities/sys-user-permission.entity';
+import { SysUserRolePermission } from '../entities/sys-user-role-permission.entity';
 
 const AppDataSource = new DataSource({
   type: 'postgres',
@@ -31,7 +33,9 @@ async function seed() {
   const adminRepo = AppDataSource.getRepository(SysAdmin);
   const userGroupRepo = AppDataSource.getRepository(SysUserGroup);
   const userRepo = AppDataSource.getRepository(SysUser);
-  const permissionRepo = AppDataSource.getRepository(SysPermission);
+  const permissionRepo = AppDataSource.getRepository(SysAdminPermission);
+  const userPermissionRepo = AppDataSource.getRepository(SysUserPermission);
+  const userRolePermissionRepo = AppDataSource.getRepository(SysUserRolePermission);
 
   // 1. 创建超级管理员组
   const superAdminGroup = adminGroupRepo.create({
@@ -205,6 +209,49 @@ async function seed() {
     await permissionRepo.save(permission);
   }
   console.log('按钮权限创建成功');
+
+  // 6. 创建 app/web 会员中心默认权限
+  const defaultUserPermissions = [
+    // 一级菜单
+    { name: '会员首页', code: 'member.home', type: 'menu', path: '/member', icon: 'HomeOutlined', parentId: 0, sort: 1 },
+    { name: '个人信息', code: 'member.profile', type: 'menu', path: '/member/profile', icon: 'UserOutlined', parentId: 0, sort: 2 },
+    { name: '充值中心', code: 'member.recharge', type: 'menu', icon: 'PayCircleOutlined', parentId: 0, sort: 3 },
+    { name: '交易记录', code: 'member.records', type: 'menu', icon: 'HistoryOutlined', parentId: 0, sort: 4 },
+  ];
+
+  const userPermissionMap = new Map<string, number>();
+  for (const perm of defaultUserPermissions) {
+    const permission = userPermissionRepo.create(perm);
+    await userPermissionRepo.save(permission);
+    userPermissionMap.set(perm.code, permission.id);
+  }
+  console.log('会员中心一级权限创建成功');
+
+  // 二级菜单
+  const childUserPermissions = [
+    { name: '余额充值', code: 'member.recharge.balance', type: 'menu', path: '/recharge/balance', icon: 'WalletOutlined', parentCode: 'member.recharge', sort: 1 },
+    { name: '积分充值', code: 'member.recharge.score', type: 'menu', path: '/recharge/score', icon: 'GiftOutlined', parentCode: 'member.recharge', sort: 2 },
+    { name: '余额记录', code: 'member.records.balance', type: 'menu', path: '/member/records/balance', icon: 'WalletOutlined', parentCode: 'member.records', sort: 1 },
+    { name: '积分记录', code: 'member.records.score', type: 'menu', path: '/member/records/score', icon: 'GiftOutlined', parentCode: 'member.records', sort: 2 },
+  ];
+
+  for (const perm of childUserPermissions) {
+    const parentId = userPermissionMap.get(perm.parentCode) || 0;
+    const permission = userPermissionRepo.create({ ...perm, parent_id: parentId });
+    await userPermissionRepo.save(permission);
+    userPermissionMap.set(perm.code, permission.id);
+  }
+  console.log('会员中心二级权限创建成功');
+
+  // 给默认用户组分配所有会员中心权限
+  for (const permId of userPermissionMap.values()) {
+    const rolePerm = userRolePermissionRepo.create({
+      userGroupId: defaultUserGroup.id,
+      permissionId: permId,
+    });
+    await userRolePermissionRepo.save(rolePerm);
+  }
+  console.log('默认用户组权限分配成功');
 
   await AppDataSource.destroy();
   console.log('Seeder 执行完成');

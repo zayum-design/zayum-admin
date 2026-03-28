@@ -59,8 +59,8 @@ export interface SysUserGroup {
   updatedAt: string;
 }
 
-// 权限相关类型
-export interface SysPermission {
+// 管理员权限相关类型
+export interface SysAdminPermission {
   id: number;
   parentId: number;
   name: string;
@@ -75,7 +75,7 @@ export interface SysPermission {
   updatedAt: string;
 }
 
-export interface SysRolePermission {
+export interface SysAdminRolePermission {
   id: number;
   roleType: 'admin_group' | 'user_group';
   roleId: number;

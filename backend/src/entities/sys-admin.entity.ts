@@ -11,13 +11,8 @@ import {
 import { SysAdminGroup } from './sys-admin-group.entity';
 
 @Entity('sys_admin')
-@Index('idx_username', ['username'], { unique: true })
-@Index('idx_email', ['email'], { unique: true })
-@Index('idx_mobile', ['mobile'], { unique: true })
-@Index('idx_group_id', ['groupId'])
-@Index('idx_status', ['status'])
 export class SysAdmin {
-  @PrimaryGeneratedColumn('increment', { type: 'bigint' })
+  @PrimaryGeneratedColumn()
   id: number;
 
   @Column({ type: 'bigint', default: 1, name: 'group_id' })

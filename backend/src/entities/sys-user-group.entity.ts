@@ -8,10 +8,8 @@ import {
 } from 'typeorm';
 
 @Entity('sys_user_group')
-@Index('idx_name', ['name'], { unique: true })
-@Index('idx_status', ['status'])
 export class SysUserGroup {
-  @PrimaryGeneratedColumn('increment', { type: 'bigint' })
+  @PrimaryGeneratedColumn()
   id: number;
 
   @Column({ type: 'varchar', length: 50, unique: true })

@@ -10,6 +10,15 @@ import {
   Query,
   ParseIntPipe,
 } from '@nestjs/common';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiBearerAuth,
+  ApiParam,
+  ApiQuery,
+  ApiBody,
+} from '@nestjs/swagger';
 import { UserService } from './user.service';
 import { QueryUserDto } from './dto/query-user.dto';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -17,21 +26,35 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { SysAdmin } from '../../entities/sys-admin.entity';
 
+@ApiTags('用户管理')
+@ApiBearerAuth('JWT-auth')
 @Controller('api/admin/users')
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
   @Get()
+  @ApiOperation({ summary: '获取用户列表', description: '分页查询用户列表' })
+  @ApiResponse({ status: 200, description: '成功返回用户列表' })
+  @ApiResponse({ status: 401, description: '未授权访问' })
   async findAll(@Query() query: QueryUserDto) {
     return this.userService.findAll(query);
   }
 
   @Get(':id')
+  @ApiOperation({ summary: '获取用户详情', description: '根据ID获取用户详细信息' })
+  @ApiParam({ name: 'id', description: '用户ID', type: Number })
+  @ApiResponse({ status: 200, description: '成功返回用户详情' })
+  @ApiResponse({ status: 404, description: '用户不存在' })
   async findOne(@Param('id', ParseIntPipe) id: number) {
     return this.userService.findOne(id);
   }
 
   @Post()
+  @ApiOperation({ summary: '创建用户', description: '创建新用户' })
+  @ApiBody({ type: CreateUserDto })
+  @ApiResponse({ status: 201, description: '用户创建成功' })
+  @ApiResponse({ status: 400, description: '请求参数错误' })
+  @ApiResponse({ status: 409, description: '用户名或邮箱已存在' })
   async create(
     @Body() createUserDto: CreateUserDto,
     @CurrentUser() admin: SysAdmin,
@@ -40,6 +63,11 @@ export class UserController {
   }
 
   @Put(':id')
+  @ApiOperation({ summary: '更新用户', description: '更新用户信息' })
+  @ApiParam({ name: 'id', description: '用户ID', type: Number })
+  @ApiBody({ type: UpdateUserDto })
+  @ApiResponse({ status: 200, description: '用户更新成功' })
+  @ApiResponse({ status: 404, description: '用户不存在' })
   async update(
     @Param('id', ParseIntPipe) id: number,
     @Body() updateUserDto: UpdateUserDto,

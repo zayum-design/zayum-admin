@@ -3,6 +3,7 @@ import { ValidationPipe } from '@nestjs/common';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { join } from 'path';
 import helmet from 'helmet';
+import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { AppModule } from './app.module';
 
 async function bootstrap() {
@@ -33,7 +34,36 @@ async function bootstrap() {
     }),
   );
 
-  await app.listen(process.env.PORT ?? 3000, '0.0.0.0');
-  console.log(`Application is running on: http://0.0.0.0:${process.env.PORT ?? 3000}`);
+  // Swagger 配置
+  const config = new DocumentBuilder()
+    .setTitle('Zayum Admin API')
+    .setDescription('Zayum 后台管理系统 API 文档')
+    .setVersion('1.0')
+    .addBearerAuth(
+      {
+        type: 'http',
+        scheme: 'bearer',
+        bearerFormat: 'JWT',
+        name: 'JWT',
+        description: '输入 JWT token',
+        in: 'header',
+      },
+      'JWT-auth', // 这个名称将在 @ApiBearerAuth('JWT-auth') 中使用
+    )
+    .build();
+
+  const document = SwaggerModule.createDocument(app, config);
+  SwaggerModule.setup('api-docs', app, document, {
+    swaggerOptions: {
+      persistAuthorization: true,
+      tagsSorter: 'alpha',
+      operationsSorter: 'alpha',
+    },
+  });
+
+  const port = process.env.PORT ?? 3001;
+  await app.listen(port, '0.0.0.0');
+  console.log(`Application is running on: http://0.0.0.0:${port}`);
+  console.log(`Swagger documentation: http://0.0.0.0:${port}/api-docs`);
 }
 bootstrap();

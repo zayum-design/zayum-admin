@@ -8,10 +8,8 @@ import {
 } from 'typeorm';
 
 @Entity('sys_config')
-@Index('idx_key', ['configKey'], { unique: true })
-@Index('idx_category', ['category'])
 export class SysConfig {
-  @PrimaryGeneratedColumn('increment', { type: 'bigint' })
+  @PrimaryGeneratedColumn()
   id: number;
 
   @Column({ type: 'varchar', length: 50 })
