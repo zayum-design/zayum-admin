@@ -119,6 +119,7 @@ export interface CheckTableResponse {
 
 export interface DeleteCodeParams {
   tableName: string;
+  dropTable?: boolean;
 }
 
 export interface DeleteCodeResponse {

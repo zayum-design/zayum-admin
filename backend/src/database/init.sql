@@ -20,8 +20,8 @@ CREATE TABLE "sys_admin" (
     "nickname" VARCHAR(50) NOT NULL,
     "password" VARCHAR(128) NOT NULL,
     "avatar" VARCHAR(255),
-    "email" VARCHAR(100),
-    "mobile" VARCHAR(11),
+    "email" VARCHAR(100) UNIQUE,
+    "mobile" VARCHAR(11) UNIQUE,
     "login_failure" INT NOT NULL DEFAULT 0,
     "login_at" TIMESTAMP,
     "login_ip" VARCHAR(50),
@@ -58,10 +58,12 @@ CREATE TABLE "sys_user" (
     "nickname" VARCHAR(50) NOT NULL,
     "password" VARCHAR(128) NOT NULL,
     "avatar" VARCHAR(255),
-    "email" VARCHAR(100),
-    "mobile" VARCHAR(11),
+    "email" VARCHAR(100) UNIQUE,
+    "mobile" VARCHAR(11) UNIQUE,
     "gender" VARCHAR(20) DEFAULT 'unknown',
     "birthday" DATE,
+    "score" INT NOT NULL DEFAULT 0,
+    "balance" DECIMAL(10,2) NOT NULL DEFAULT 0,
     "status" VARCHAR(20) NOT NULL DEFAULT 'normal',
     "created_at" TIMESTAMP NOT NULL DEFAULT NOW(),
     "updated_at" TIMESTAMP NOT NULL DEFAULT NOW(),
@@ -103,6 +105,9 @@ CREATE TABLE "sys_role_permission" (
     CONSTRAINT "PK_sys_role_permission" PRIMARY KEY ("id"),
     CONSTRAINT "UQ_sys_role_permission" UNIQUE ("role_type", "role_id", "permission_id")
 );
+CREATE INDEX "idx_sys_role_permission_role_type" ON "sys_role_permission" ("role_type");
+CREATE INDEX "idx_sys_role_permission_role_id" ON "sys_role_permission" ("role_id");
+CREATE INDEX "idx_sys_role_permission_permission_id" ON "sys_role_permission" ("permission_id");
 
 -- 操作日志表
 CREATE TABLE "sys_operation_log" (
@@ -225,3 +230,40 @@ CREATE INDEX "idx_sys_user_score_scene" ON "sys_user_score" ("scene");
 CREATE INDEX "idx_sys_user_score_created_at" ON "sys_user_score" ("created_at");
 CREATE INDEX "idx_sys_user_score_order_no" ON "sys_user_score" ("order_no");
 
+-- 用户余额表
+CREATE TABLE "sys_user_balance" (
+    "id" BIGSERIAL NOT NULL,
+    "user_id" INT NOT NULL,
+    "admin_id" INT,
+    "scene" VARCHAR(50) NOT NULL,
+    "change_balance" DECIMAL(10,2) NOT NULL,
+    "before_balance" DECIMAL(10,2) NOT NULL,
+    "after_balance" DECIMAL(10,2) NOT NULL,
+    "remark" VARCHAR(500),
+    "order_no" VARCHAR(100),
+    "ip" VARCHAR(50),
+    "created_at" TIMESTAMP NOT NULL DEFAULT NOW(),
+    "updated_at" TIMESTAMP NOT NULL DEFAULT NOW(),
+    CONSTRAINT "PK_sys_user_balance" PRIMARY KEY ("id")
+);
+CREATE INDEX "idx_sys_user_balance_user_id" ON "sys_user_balance" ("user_id");
+CREATE INDEX "idx_sys_user_balance_scene" ON "sys_user_balance" ("scene");
+CREATE INDEX "idx_sys_user_balance_created_at" ON "sys_user_balance" ("created_at");
+CREATE INDEX "idx_sys_user_balance_order_no" ON "sys_user_balance" ("order_no");
+
+-- 短信验证码表
+CREATE TABLE "sms_code" (
+    "id" BIGSERIAL NOT NULL,
+    "mobile" VARCHAR(11) NOT NULL,
+    "code" VARCHAR(6) NOT NULL,
+    "type" VARCHAR(20) NOT NULL,
+    "expired_at" TIMESTAMP NOT NULL,
+    "used" BOOLEAN DEFAULT FALSE,
+    "created_at" TIMESTAMP NOT NULL DEFAULT NOW(),
+    CONSTRAINT "PK_sms_code" PRIMARY KEY ("id")
+);
+CREATE INDEX "idx_sms_code_mobile" ON "sms_code" ("mobile");
+CREATE INDEX "idx_sms_code_type" ON "sms_code" ("type");
+CREATE INDEX "idx_sms_code_used" ON "sms_code" ("used");
+CREATE INDEX "idx_sms_code_mobile_type_used" ON "sms_code" ("mobile", "type", "used");
+CREATE INDEX "idx_sms_code_expired_at" ON "sms_code" ("expired_at");

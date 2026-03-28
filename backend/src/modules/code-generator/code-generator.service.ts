@@ -1296,9 +1296,14 @@ export const ${moduleCamelName}Service = {
 
   // 删除代码
   async deleteCode(dto: DeleteCodeDto): Promise<{ files: string[]; success: boolean; message: string }> {
-    const { tableName } = dto;
+    const { tableName, dropTable } = dto;
 
     console.log('[CodeGenerator] deleteCode called:', { tableName });
+
+    // 禁止删除 sys_ 开头的系统表
+    if (tableName.toLowerCase().startsWith('sys_')) {
+      throw new BadRequestException('系统表（sys_开头）禁止删除');
+    }
 
     // 提取无前缀的模块名（如 sys_user -> user）
     const moduleName = this.getModuleName(tableName);
@@ -1410,6 +1415,19 @@ export const ${moduleCamelName}Service = {
       autoUnregisterResults.push(`菜单删除失败: ${error.message}`);
     }
 
+    // 4. 删除数据表（如果勾选）
+    let dropTableResult = '';
+    if (dropTable) {
+      try {
+        const tableDropped = await this.dropTable(tableName);
+        if (tableDropped) {
+          dropTableResult = '；数据表已删除';
+        }
+      } catch (error) {
+        autoUnregisterResults.push(`数据表删除失败: ${error.message}`);
+      }
+    }
+
     const autoUnregisterMsg = autoUnregisterResults.length > 0
       ? `；自动注销: ${autoUnregisterResults.join(', ')}`
       : '';
@@ -1418,9 +1436,25 @@ export const ${moduleCamelName}Service = {
       files: deletedFiles,
       success: failedFiles.length === 0,
       message: failedFiles.length === 0
-        ? `成功删除 ${deletedFiles.length} 个文件${autoUnregisterMsg}`
+        ? `成功删除 ${deletedFiles.length} 个文件${autoUnregisterMsg}${dropTableResult}`
         : `删除 ${deletedFiles.length} 个文件，失败 ${failedFiles.length} 个: ${failedFiles.join(', ')}`,
     };
+  }
+
+  /**
+   * 删除数据表
+   */
+  private async dropTable(tableName: string): Promise<boolean> {
+    // 检查表是否存在
+    const exists = await this.checkTableExists(tableName);
+    if (!exists) {
+      return false;
+    }
+
+    // 执行删除表操作
+    await this.dataSource.query(`DROP TABLE IF EXISTS "${tableName}" CASCADE`);
+    console.log('[CodeGenerator] table dropped:', tableName);
+    return true;
   }
 
   /**

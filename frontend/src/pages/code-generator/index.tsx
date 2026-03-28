@@ -121,6 +121,7 @@ export default function CodeGenerator() {
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [deleteResult, setDeleteResult] = useState<{ files: string[]; success: boolean; message: string } | null>(null);
+  const [dropTable, setDropTable] = useState(false);
 
   // 加载表列表
   useEffect(() => {
@@ -602,6 +603,7 @@ export default function CodeGenerator() {
     try {
       const response = await codeGeneratorService.deleteCode({
         tableName: targetTableName,
+        dropTable,
       });
       if (response.code === 200) {
         setDeleteResult(response.data);
@@ -613,6 +615,12 @@ export default function CodeGenerator() {
           setSelectedColumns([]);
           setGeneratedFiles([]);
           setActiveTab('');
+          // 如果删除了表，刷新表列表
+          if (dropTable) {
+            await fetchTables();
+          }
+          // 重置删除表选项
+          setDropTable(false);
         } else {
           message.warning(response.data.message);
         }
@@ -833,16 +841,26 @@ export default function CodeGenerator() {
                 }))}
               />
               {selectedTable && (
-                <Button
-                  danger
-                  icon={<DeleteOutlined />}
-                  onClick={() => {
-                    setDeleteModalVisible(true);
-                    setDeleteResult(null);
-                  }}
-                >
-                  删除全部代码
-                </Button>
+                <Space>
+                  <Button
+                    danger
+                    icon={<DeleteOutlined />}
+                    disabled={selectedTable.toLowerCase().startsWith('sys_')}
+                    onClick={() => {
+                      setDeleteModalVisible(true);
+                      setDeleteResult(null);
+                      setDropTable(false);
+                    }}
+                  >
+                    删除全部代码
+                  </Button>
+                  {selectedTable.toLowerCase().startsWith('sys_') && (
+                    <Text type="warning">
+                      <ExclamationCircleOutlined style={{ marginRight: 4 }} />
+                      系统表禁止删除
+                    </Text>
+                  )}
+                </Space>
               )}
             </Space>
           </TabPane>
@@ -1287,6 +1305,7 @@ export default function CodeGenerator() {
             type="primary"
             icon={<DeleteOutlined />}
             loading={deleting}
+            disabled={(step1ActiveTab === 'existing' ? selectedTable : newTableName).toLowerCase().startsWith('sys_')}
             onClick={handleDeleteCode}
           >
             确认删除
@@ -1295,6 +1314,14 @@ export default function CodeGenerator() {
         width={600}
       >
         <Space direction="vertical" style={{ width: '100%' }} size="large">
+          {(step1ActiveTab === 'existing' ? selectedTable : newTableName).toLowerCase().startsWith('sys_') && (
+            <Alert
+              message="🚫 系统表禁止删除"
+              description="以 sys_ 开头的系统表受保护，不允许删除代码文件或数据表。"
+              type="error"
+              showIcon
+            />
+          )}
           <Alert
             message="⚠️ 此操作将永久删除以下代码文件及相关菜单，不可恢复！"
             description={
@@ -1321,6 +1348,20 @@ export default function CodeGenerator() {
             type="error"
             showIcon
           />
+
+          <div style={{ padding: '12px 16px', background: '#fff2f0', border: '1px solid #ffccc7', borderRadius: 6 }}>
+            <Checkbox
+              checked={dropTable}
+              onChange={(e) => setDropTable(e.target.checked)}
+            >
+              <span style={{ color: '#ff4d4f', fontWeight: 'bold' }}>同时删除数据表（危险！）</span>
+            </Checkbox>
+            {dropTable && (
+              <div style={{ marginTop: 8, marginLeft: 24, color: '#ff4d4f', fontSize: 12 }}>
+                ⚠️ 警告：勾选后数据表将被永久删除，表中的所有数据也将被清空！
+              </div>
+            )}
+          </div>
 
           {deleteResult && (
             <Alert

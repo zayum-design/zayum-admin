@@ -1,5 +1,10 @@
 import { DataSource } from 'typeorm';
 import * as bcrypt from 'bcrypt';
+import * as dotenv from 'dotenv';
+import * as path from 'path';
+
+// 加载 .env 文件
+dotenv.config({ path: path.resolve(__dirname, '../../.env') });
 import { SysAdmin } from '../entities/sys-admin.entity';
 import { SysAdminGroup } from '../entities/sys-admin-group.entity';
 import { SysUser } from '../entities/sys-user.entity';
@@ -8,11 +13,11 @@ import { SysPermission } from '../entities/sys-permission.entity';
 
 const AppDataSource = new DataSource({
   type: 'postgres',
-  host: 'localhost',
-  port: 5432,
-  username: 'niujinhui',
-  password: '',
-  database: 'system_admin',
+  host: process.env.DB_HOST || 'localhost',
+  port: parseInt(process.env.DB_PORT || '5432', 10),
+  username: process.env.DB_USERNAME || 'niujinhui',
+  password: process.env.DB_PASSWORD || '',
+  database: process.env.DB_DATABASE || 'system_admin',
   entities: [__dirname + '/../**/*.entity{.ts,.js}'],
   synchronize: false,
   logging: false,
