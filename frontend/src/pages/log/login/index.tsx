@@ -11,6 +11,7 @@ import {
   message,
 } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
+import { EyeOutlined } from '@ant-design/icons';
 import { logService } from '../../../services/log.service';
 import type { QueryLoginLogDTO, LoginLogItem } from '../../../services/log.service';
 import { usePermissionStore } from '../../../store/permission.store';
@@ -147,7 +148,7 @@ export default function LoginLog() {
       key: 'action',
       width: 80,
       render: (_: any, record: LoginLogItem) => (
-        <Button type="link" size="small" onClick={() => handleViewDetail(record)}>
+        <Button type="link" size="small" icon={<EyeOutlined />} onClick={() => handleViewDetail(record)}>
           详情
         </Button>
       ),

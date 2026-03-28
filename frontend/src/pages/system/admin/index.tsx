@@ -13,6 +13,7 @@ import {
 } from 'antd';
 import { adminService } from '../../../services/admin.service';
 import type { QueryAdminDTO, CreateAdminDTO, UpdateAdminDTO, AdminItem } from '../../../services/admin.service';
+import { EditOutlined, DeleteOutlined, StopOutlined, PlayCircleOutlined, KeyOutlined } from '@ant-design/icons';
 import { usePermissionStore } from '../../../store/permission.store';
 
 export default function AdminManagement() {
@@ -217,7 +218,7 @@ export default function AdminManagement() {
       render: (_: any, record: AdminItem) => (
         <Space size="small">
           {canEdit && (
-            <Button type="link" size="small" onClick={() => handleEdit(record)}>
+            <Button type="link" size="small" icon={<EditOutlined />} onClick={() => handleEdit(record)}>
               编辑
             </Button>
           )}
@@ -225,13 +226,14 @@ export default function AdminManagement() {
             <Button
               type="link"
               size="small"
+              icon={record.status === 'normal' ? <StopOutlined /> : <PlayCircleOutlined />}
               onClick={() => handleStatusChange(record.id, record.status === 'normal' ? 'hidden' : 'normal')}
             >
               {record.status === 'normal' ? '禁用' : '启用'}
             </Button>
           )}
           {canResetPassword && (
-            <Button type="link" size="small" onClick={() => handleResetPassword(record.id)}>
+            <Button type="link" size="small" icon={<KeyOutlined />} onClick={() => handleResetPassword(record.id)}>
               重置密码
             </Button>
           )}
@@ -240,7 +242,7 @@ export default function AdminManagement() {
               title="确定删除此管理员？"
               onConfirm={() => handleDelete(record.id)}
             >
-              <Button type="link" size="small" danger>
+              <Button type="link" size="small" icon={<DeleteOutlined />} danger>
                 删除
               </Button>
             </Popconfirm>

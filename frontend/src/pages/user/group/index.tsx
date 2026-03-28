@@ -14,6 +14,7 @@ import {
   Tree,
 } from 'antd';
 import type { DataNode } from 'antd/es/tree';
+import { SettingOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
 import { userGroupService } from '../../../services/user-group.service';
 import { userPermissionService } from '../../../services/user-permission.service';
 import type { QueryUserGroupDTO, CreateUserGroupDTO, UpdateUserGroupDTO, UserGroupItem } from '../../../services/user-group.service';
@@ -215,12 +216,12 @@ export default function UserGroupManagement() {
       render: (_: any, record: UserGroupItem) => (
         <Space size="small">
           {canEdit && (
-            <Button type="link" size="small" onClick={() => handlePermissionSetting(record)}>
+            <Button type="link" size="small" icon={<SettingOutlined />} onClick={() => handlePermissionSetting(record)}>
               权限设置
             </Button>
           )}
           {canEdit && (
-            <Button type="link" size="small" onClick={() => handleEdit(record)}>
+            <Button type="link" size="small" icon={<EditOutlined />} onClick={() => handleEdit(record)}>
               编辑
             </Button>
           )}
@@ -229,7 +230,7 @@ export default function UserGroupManagement() {
               title="确定删除此用户组？"
               onConfirm={() => handleDelete(record.id)}
             >
-              <Button type="link" size="small" danger>
+              <Button type="link" size="small" icon={<DeleteOutlined />} danger>
                 删除
               </Button>
             </Popconfirm>

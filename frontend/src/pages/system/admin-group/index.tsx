@@ -14,6 +14,7 @@ import {
   Tree,
 } from 'antd';
 import type { DataNode } from 'antd/es/tree';
+import { SettingOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
 import { adminGroupService } from '../../../services/admin-group.service';
 import type { QueryAdminGroupDTO, CreateAdminGroupDTO, UpdateAdminGroupDTO, AdminGroupItem } from '../../../services/admin-group.service';
 import { usePermissionStore } from '../../../store/permission.store';
@@ -216,12 +217,12 @@ export default function AdminGroupManagement() {
       render: (_: any, record: AdminGroupItem) => (
         <Space size="small">
           {canEdit && (
-            <Button type="link" size="small" onClick={() => handlePermissionSetting(record)}>
+            <Button type="link" size="small" icon={<SettingOutlined />} onClick={() => handlePermissionSetting(record)}>
               权限设置
             </Button>
           )}
           {canEdit && (
-            <Button type="link" size="small" onClick={() => handleEdit(record)}>
+            <Button type="link" size="small" icon={<EditOutlined />} onClick={() => handleEdit(record)}>
               编辑
             </Button>
           )}
@@ -230,7 +231,7 @@ export default function AdminGroupManagement() {
               title="确定删除此管理员组？"
               onConfirm={() => handleDelete(record.id)}
             >
-              <Button type="link" size="small" danger>
+              <Button type="link" size="small" icon={<DeleteOutlined />} danger>
                 删除
               </Button>
             </Popconfirm>

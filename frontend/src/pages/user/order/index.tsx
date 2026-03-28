@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Table, Button, Modal, Form, Input, Space, message } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
+import { EditOutlined, DeleteOutlined } from '@ant-design/icons';
 import { userOrderService } from '../../../services/user-order.service';
 import type { SysUserOrderItem, CreateSysUserOrderDto, UpdateSysUserOrderDto } from '../../../services/user-order.service';
 
@@ -196,10 +197,10 @@ export default function SysUserOrderManagement() {
       key: 'action',
       render: (_: any, record: SysUserOrderItem) => (
         <Space size="small">
-          <Button type="link" size="small" onClick={() => handleEdit(record)}>
+          <Button type="link" size="small" icon={<EditOutlined />} onClick={() => handleEdit(record)}>
             编辑
           </Button>
-          <Button type="link" size="small" danger onClick={() => handleDelete(record.id)}>
+          <Button type="link" size="small" icon={<DeleteOutlined />} danger onClick={() => handleDelete(record.id)}>
             删除
           </Button>
         </Space>

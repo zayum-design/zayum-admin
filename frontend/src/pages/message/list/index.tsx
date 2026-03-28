@@ -12,6 +12,7 @@ import {
 import {
   DeleteOutlined,
   CheckOutlined,
+  EyeOutlined,
   BellOutlined,
   MailOutlined,
   MessageOutlined,
@@ -215,7 +216,7 @@ export default function NotificationList() {
       width: 150,
       render: (_, record) => (
         <Space size="small">
-          <Button type="link" size="small" onClick={() => showDetail(record)}>
+          <Button type="link" size="small" icon={<EyeOutlined />} onClick={() => showDetail(record)}>
             查看
           </Button>
           {!record.isRead && (

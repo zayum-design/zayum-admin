@@ -12,6 +12,7 @@ import {
   Popconfirm,
 } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
+import { EditOutlined, DeleteOutlined } from '@ant-design/icons';
 import { configService } from '../../../services/config.service';
 import type { QueryConfigDTO, CreateConfigDTO, UpdateConfigDTO, ConfigItem } from '../../../services/config.service';
 import { usePermissionStore } from '../../../store/permission.store';
@@ -206,7 +207,7 @@ export default function ConfigManagement() {
       render: (_: any, record: ConfigItem) => (
         <Space size="small">
           {canEdit && (
-            <Button type="link" size="small" onClick={() => handleEdit(record)}>
+            <Button type="link" size="small" icon={<EditOutlined />} onClick={() => handleEdit(record)}>
               编辑
             </Button>
           )}
@@ -215,7 +216,7 @@ export default function ConfigManagement() {
               title="确定删除此配置？"
               onConfirm={() => handleDelete(record.id)}
             >
-              <Button type="link" size="small" danger>
+              <Button type="link" size="small" icon={<DeleteOutlined />} danger>
                 删除
               </Button>
             </Popconfirm>

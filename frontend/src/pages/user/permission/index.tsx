@@ -11,6 +11,7 @@ import {
   Popconfirm,
 } from 'antd';
 import type { DataNode } from 'antd/es/tree';
+import { EditOutlined, DeleteOutlined } from '@ant-design/icons';
 import { userPermissionService } from '../../../services/user-permission.service';
 import type {
   SysUserPermissionItem, 
@@ -141,14 +142,14 @@ export default function SysUserPermissionManagement() {
       key: 'action',
       render: (_: any, record: SysUserPermissionItem) => (
         <>
-          <Button type="link" size="small" onClick={() => handleEdit(record)}>
+          <Button type="link" size="small" icon={<EditOutlined />} onClick={() => handleEdit(record)}>
             编辑
           </Button>
           <Popconfirm
             title="确定删除此权限？"
             onConfirm={() => handleDelete(record.id)}
           >
-            <Button type="link" size="small" danger>
+            <Button type="link" size="small" icon={<DeleteOutlined />} danger>
               删除
             </Button>
           </Popconfirm>

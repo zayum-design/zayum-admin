@@ -17,12 +17,19 @@ import {
   Statistic,
   Row,
   Col,
+  Dropdown,
 } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import {
   TrophyOutlined,
   WalletOutlined,
   PlusOutlined,
+  EditOutlined,
+  DeleteOutlined,
+  StopOutlined,
+  PlayCircleOutlined,
+  KeyOutlined,
+  MoreOutlined,
 } from '@ant-design/icons';
 import { userService } from '../../../services/user.service';
 import type { QueryUserDTO, CreateUserDTO, UpdateUserDTO, UserItem } from '../../../services/user.service';
@@ -368,57 +375,73 @@ export default function UserManagement() {
     {
       title: '操作',
       key: 'action',
-      width: 320,
+      width: 180,
       fixed: 'right',
-      render: (_: any, record: UserItem) => (
-        <Space size="small">
-          {canEdit && (
-            <Button type="link" size="small" onClick={() => handleEdit(record)}>
-              编辑
-            </Button>
-          )}
-          {canEdit && (
-            <Button type="link" size="small" onClick={() => handleStatusChange(record.id, record.status === 'normal' ? 'hidden' : 'normal')}>
-              {record.status === 'normal' ? '禁用' : '启用'}
-            </Button>
-          )}
-          {canEdit && (
-            <Button type="link" size="small" onClick={() => handleResetPassword(record.id)}>
-              重置密码
-            </Button>
-          )}
-          {canEdit && (
-            <Button
-              type="link"
-              size="small"
-              icon={<PlusOutlined />}
-              onClick={() => handleAdjustScore(record, 'add')}
-            >
-              积分
-            </Button>
-          )}
-          {canEdit && (
-            <Button
-              type="link"
-              size="small"
-              icon={<WalletOutlined />}
-              onClick={() => handleAdjustBalance(record, 'add')}
-            >
-              余额
-            </Button>
-          )}
-          {canDelete && (
-            <Popconfirm
-              title="确定删除此用户？"
-              onConfirm={() => handleDelete(record.id)}
-            >
-              <Button type="link" size="small" danger>
-                删除
+      render: (_: any, record: UserItem) => {
+        // 构建下拉菜单项
+        const menuItems = [];
+
+        if (canEdit) {
+          // 禁用/启用
+          menuItems.push({
+            key: 'status',
+            label: record.status === 'normal' ? '禁用' : '启用',
+            icon: record.status === 'normal' ? <StopOutlined /> : <PlayCircleOutlined />,
+            onClick: () => handleStatusChange(record.id, record.status === 'normal' ? 'hidden' : 'normal'),
+          });
+
+          // 重置密码
+          menuItems.push({
+            key: 'resetPassword',
+            label: '重置密码',
+            icon: <KeyOutlined />,
+            onClick: () => handleResetPassword(record.id),
+          });
+
+          // 积分
+          menuItems.push({
+            key: 'score',
+            label: '积分',
+            icon: <PlusOutlined />,
+            onClick: () => handleAdjustScore(record, 'add'),
+          });
+
+          // 余额
+          menuItems.push({
+            key: 'balance',
+            label: '余额',
+            icon: <WalletOutlined />,
+            onClick: () => handleAdjustBalance(record, 'add'),
+          });
+        }
+
+        return (
+          <Space size="small">
+            {canEdit && (
+              <Button type="link" size="small" icon={<EditOutlined />} onClick={() => handleEdit(record)}>
+                编辑
               </Button>
-            </Popconfirm>
-          )}
-        </Space>
-      ),
+            )}
+
+            {canDelete && (
+              <Popconfirm
+                title="确定删除此用户？"
+                onConfirm={() => handleDelete(record.id)}
+              >
+                <Button type="link" size="small" icon={<DeleteOutlined />} danger>
+                  删除
+                </Button>
+              </Popconfirm>
+            )}
+
+            {menuItems.length > 0 && (
+              <Dropdown menu={{ items: menuItems }} trigger={['click']}>
+                <Button type="link" size="small" icon={<MoreOutlined />} />
+              </Dropdown>
+            )}
+          </Space>
+        );
+      },
     },
   ];
 

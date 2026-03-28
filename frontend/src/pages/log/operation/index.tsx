@@ -11,6 +11,7 @@ import {
   message,
 } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
+import { EyeOutlined } from '@ant-design/icons';
 import { logService } from '../../../services/log.service';
 import type { QueryOperationLogDTO, OperationLogItem } from '../../../services/log.service';
 import { usePermissionStore } from '../../../store/permission.store';
@@ -156,7 +157,7 @@ export default function OperationLog() {
       key: 'action',
       width: 100,
       render: (_: any, record: OperationLogItem) => (
-        <Button type="link" size="small" onClick={() => handleViewDetail(record)}>
+        <Button type="link" size="small" icon={<EyeOutlined />} onClick={() => handleViewDetail(record)}>
           详情
         </Button>
       ),
